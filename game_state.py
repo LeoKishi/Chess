@@ -6,6 +6,7 @@ class GameState:
     selected = None
     moves = None
     captures = None
+    last_move = None
 
 
     @classmethod
@@ -55,6 +56,7 @@ class GameState:
         cls.board[old_x][old_y] = None
         cls.board[new_x][new_y] = piece
 
+        cls.last_move = ((old_x, old_y), (new_x, new_y))
         cls.first_move_status(*new_pos)
 
 

@@ -13,8 +13,10 @@ class ChessBoard(tk.Tk):
         self.title('Chess')
         self.circle_img = CircleImage()
         self.dot_img = DotImage()
+        self.indicator_img = IndicatorImage()
         self.player = player_color
         self.highlights = list()
+        self.indicators = list()
         self.create_board()
 
 
@@ -45,6 +47,7 @@ class ChessBoard(tk.Tk):
                 self.draw_square(x, y)
 
         self.draw_highlight()
+        self.draw_indicator()
 
 
     def draw_square(self, x, y):
@@ -73,6 +76,16 @@ class ChessBoard(tk.Tk):
             for x,y in gs.captures:
                 self.board_ui[x][y].set_highlight(self.circle_img)
                 self.highlights.append((x,y))
+
+
+    def draw_indicator(self):
+        for x,y in self.indicators:
+            self.board_ui[x][y].set_indicator('')
+
+        if gs.last_move:
+            for x,y in gs.last_move:
+                self.board_ui[x][y].set_indicator(self.indicator_img)
+                self.indicators.append((x,y))
 
 
     def set_board_color(self, player1, color1, color2):
