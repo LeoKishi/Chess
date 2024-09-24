@@ -51,34 +51,37 @@ class ChessBoard(tk.Tk):
         x, y = raw_x//60, raw_y//60
 
         if game.can_select(x, y) and game.color(x,y) == self.player:
-            game.select(x, y)
-            self.is_dragging = True
-            self.drag_piece(x, y)
+            self.start_drag(x, y)
 
         elif game.selected == game.get(x,y):
             game.clear_selected()
 
         elif game.selected and game.is_same_color(x, y):
-            if self.is_dragging:
-                self.is_dragging = False
-                game.clear_selected()
-            else:
-                game.select(x, y)
-                self.is_dragging = True
-                self.drag_piece(x, y)
-            
+            if not self.stop_drag():
+                self.start_drag(x, y)
             
         elif (x,y) in game.can_move():
             if game.process_action(x, y):
                 self.draw_move()
 
         else:
-            if self.is_dragging:
-                self.is_dragging = False
-            game.clear_selected()
+            self.stop_drag()
 
         self.draw_elements()
         self.board_ui[x][y].raise_piece()
+
+
+    def start_drag(self, x, y):
+        game.select(x, y)
+        self.is_dragging = True
+        self.drag_piece(x, y)
+
+
+    def stop_drag(self) -> bool:
+        if self.is_dragging:
+            self.is_dragging = False
+            game.clear_selected()
+            return True
 
 
     def click_release(self, event):
