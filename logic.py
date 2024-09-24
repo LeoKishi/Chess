@@ -2,11 +2,6 @@ from tkinter import PhotoImage
 from game_state import GameState
 
 
-# TODO:
-# possible actions highlighted in the GUI after selecting piece
-
-
-
 class Piece(GameState):
     def __init__(self, name:str, color:str, position:tuple):
         self.name = name
@@ -35,28 +30,26 @@ class Pawn(Piece):
 
     def can_move(self) -> list:
         x, y = self.pos
-        path = -1 if self.color == 'White' else 1
-        empty = list()
+        moves = list()
 
         for i in range(1, 3 if self.first_move else 2):
-            if self.is_blocked(x+i*path, y):
+            if self.is_blocked(x+i*-1, y):
                 break
             else:
-                empty.append((x+i*path, y))
+                moves.append((x+i*-1, y))
 
-        return empty
+        return moves
 
 
     def can_capture(self) -> list:
         x, y = self.pos
-        path = -1 if self.color == 'White' else 1
-        empty = list()
+        captures = list()
 
         for i in range(-1, 2, 2):
-            if self.is_enemy(self, [(x+path, y+i)]):
-                empty.append((x+path, y+i))
+            if self.is_enemy(self, [(x-1, y+i)]):
+                captures.append((x-1, y+i))
 
-        return empty
+        return captures
 
 
 

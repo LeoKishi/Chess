@@ -13,9 +13,10 @@ class Display(tk.Tk):
         self.circle_img = CircleImage()
         self.dot_img = DotImage()
         self.highlights = list()
+        self.player = 'White'
 
         self.create_board()
-        self.populate_board(player1='White')
+        self.populate_board(player1=self.player)
         self.update_board()
 
     
@@ -40,7 +41,7 @@ class Display(tk.Tk):
 
 
     def click_handler(self, x, y):
-        if gs.selected is None:
+        if gs.can_select(x, y) and gs.board[x][y].color == self.player:
             gs.select(x, y)
 
         elif gs.selected == gs.board[x][y]:

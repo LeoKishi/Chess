@@ -10,6 +10,9 @@ class GameState:
 
     @classmethod
     def process_action(cls, x, y):
+        if cls.selected is None:
+            return
+
         if (x,y) in cls.moves:
             cls.register(cls.selected, (x,y))
 
@@ -28,19 +31,20 @@ class GameState:
 
     @classmethod
     def select(cls, x, y):
-        if cls.board[x][y] is not None:
-            cls.clear_selected()
+        if cls.is_piece(x, y):
             cls.selected = cls.board[x][y]
             cls.find_possible_actions(x, y)
 
 
     @classmethod
+    def can_select(cls, x, y) -> bool:
+        return cls.selected is None and cls.is_piece(x, y)
+
+
+    @classmethod
     def can_change_selection(cls, x, y) -> bool:
-        if cls.board[x][y] is None:
-            return False
-            
-        if cls.selected.color == cls.board[x][y].color:
-            return True
+        if cls.selected is not None:
+            return cls.is_piece(x, y) and cls.is_same_color(x, y)
 
 
     @classmethod
@@ -70,7 +74,7 @@ class GameState:
             if not cls.is_inside(x, y):
                 continue
 
-            if cls.board[x][y] is not None and cls.board[x][y].color == enemy_color:
+            if cls.is_piece(x, y) and cls.board[x][y].color == enemy_color:
                 enemy_pos.append((x,y))
 
         return enemy_pos
@@ -78,7 +82,7 @@ class GameState:
 
     @classmethod
     def is_blocked(cls, x, y) -> bool:
-        return cls.is_inside(x, y) and cls.board[x][y] != None
+        return cls.is_inside(x, y) and cls.is_piece(x, y)
 
 
     @classmethod
@@ -88,9 +92,19 @@ class GameState:
 
 
     @classmethod
-    def is_inside(cls, x, y):
+    def is_inside(cls, x, y) -> bool:
         return (0 <= x < 8) and (0 <= y < 8)
 
+
+    @classmethod
+    def is_piece(cls, x, y) -> bool:
+        return cls.board[x][y] is not None
+
+
+    @classmethod
+    def is_same_color(cls, x, y) -> bool:
+        if cls.is_piece(x, y):
+            return cls.board[x][y].color == cls.selected.color
 
 
 if __name__ == '__main__':
