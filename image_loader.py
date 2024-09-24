@@ -63,7 +63,6 @@ class Square:
     def place(self, x, y):
         for elem in self.elements:
             self.canvas.moveto(elem, y, x)
-        self.raise_piece()
 
     
     def set_bg(self, img):
@@ -72,7 +71,7 @@ class Square:
 
     def set_highlight(self, img):
         self.canvas.itemconfig(self.highlight, image=img)
-
+        self.canvas.tag_raise(self.highlight)
 
     def set_indicator(self, img):
         self.canvas.itemconfig(self.indicator, image=img)

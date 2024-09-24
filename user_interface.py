@@ -16,6 +16,7 @@ class ChessBoard(tk.Tk):
         self.player = player_color
         self.highlights = list()
         self.indicators = list()
+        self.hover = None
         self.is_dragging = False
         
         self.load_images()
@@ -56,52 +57,69 @@ class ChessBoard(tk.Tk):
         elif game.selected == game.get(x,y):
             game.clear_selected()
 
-        elif game.is_same_color(x, y):
+        elif game.selected and game.is_same_color(x, y):
             if self.is_dragging:
+                self.is_dragging = False
+                game.clear_selected()
+            else:
                 game.select(x, y)
                 self.start_drag(x, y)
-            else:
-                game.clear_selected()
+            
             
         elif (x,y) in game.can_move():
             if game.process_action(x, y):
                 self.draw_move()
 
         else:
+            if self.is_dragging:
+                self.is_dragging = False
             game.clear_selected()
 
         self.draw_elements()
+        self.board_ui[x][y].raise_piece()
 
 
     def click_release(self, event):
-        self.is_dragging = False
-        x, y = self.get_mouse_pos(invert=True)
-        if game.selected is not None and game.selected.pos != (x//60, y//60):
-            self.click_handler(x, y)
+        if game.selected is None:
+            return
+        
+        if game.selected.pos == self.get_mouse_pos(on_grid=True, invert=True):
+            self.is_dragging = False
+            self.draw_squares()
+        else:
+            self.click_handler(*self.get_mouse_pos(invert=True))
+            
 
 
     def start_drag(self, x, y):
         self.is_dragging = True
-        self.board_ui[x][y].raise_piece()
         self.drag_piece(x, y)
 
 
     def drag_piece(self, x, y):
         if self.is_dragging:
             self.board_ui[x][y].move(*self.get_mouse_pos())
-            #self.board_ui[x][y].set_hover(self.hover_img)
+            self.hover_highlight(*self.get_mouse_pos(on_grid=True, invert=True))
             self.after(1000//60, self.drag_piece, *(x, y))
 
 
     def hover_highlight(self, x, y):
-        ...
+        if self.hover == (x,y):
+            return
 
+        if self.hover:
+            old_x, old_y = self.hover
+            self.board_ui[old_x][old_y].set_hover('')
 
-
-
+        self.hover = (x,y)
+        self.board_ui[x][y].set_hover(self.hover_img)
 
 
     def draw_elements(self):
+        if self.hover:
+            x, y = self.hover
+            self.board_ui[x][y].set_hover('')
+            self.hover = None
         self.draw_squares()
         self.draw_highlight()
         self.draw_indicator()
@@ -204,9 +222,12 @@ class ChessBoard(tk.Tk):
                     self.board_ui[x][y].set_bg(self.darkbg_img)
 
 
-    def get_mouse_pos(self, invert=False) -> tuple:
+    def get_mouse_pos(self, on_grid=False, invert=False) -> tuple:
         x = self.winfo_pointerx() - self.winfo_rootx()
         y = self.winfo_pointery() - self.winfo_rooty()
+
+        if on_grid:
+            x, y = x//60, y//60
 
         if invert:
             return (y, x)

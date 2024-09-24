@@ -6,7 +6,6 @@ from game_state import GameState as game
 # TODO:
 # ======= GUI =======
 # Highlight square that the piece is hovering
-# Place piece in square if it is a valid move
 
 # ======= logic =======
 # Rook logic
@@ -30,7 +29,7 @@ from game_state import GameState as game
 
 
 class Chess:
-    gui = ChessBoard(player_color='Black')
+    gui = ChessBoard(player_color='White')
 
 
     def __init__(self):
