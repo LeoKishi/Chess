@@ -9,7 +9,6 @@ class GameState:
     last_move = None
 
 
-
     @classmethod
     def process_action(cls, x, y) -> bool:
         if (x,y) in cls.moves:

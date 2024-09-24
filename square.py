@@ -1,36 +1,3 @@
-from tkinter import Canvas, PhotoImage
-
-
-class CircleImage(PhotoImage):
-    def __init__(self, file='assets/circle.png'):
-        super().__init__(file=file)
-
-
-class DotImage(PhotoImage):
-    def __init__(self, file='assets/dot.png'):
-        super().__init__(file=file)
-
-
-class IndicatorImage(PhotoImage):
-    def __init__(self, file='assets/indicator.png'):
-        super().__init__(file=file)
-
-
-class LightSquareImage(PhotoImage):
-    def __init__(self, file='assets/light_square.png'):
-        super().__init__(file=file)
-
-
-class DarkSquareImage(PhotoImage):
-    def __init__(self, file='assets/dark_square.png'):
-        super().__init__(file=file)
-
-
-class HoverImage(PhotoImage):
-    def __init__(self, file='assets/hover.png'):
-        super().__init__(file=file)
-
-
 class Square:
     def __init__(self, canvas):
         self.canvas = canvas
@@ -50,7 +17,6 @@ class Square:
                          self.hover,
                          self.piece]
         
-
 
     def move(self, mouse_x, mouse_y):
         self.canvas.moveto(self.piece, mouse_x-30, mouse_y-30)

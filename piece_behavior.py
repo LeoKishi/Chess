@@ -1,6 +1,6 @@
 from tkinter import PhotoImage
 from game_state import Piece
-from SpriteLoader import SpriteSheet
+from sprite_loader import SpriteSheet
 
 
 # TODO:
