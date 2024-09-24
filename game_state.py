@@ -1,4 +1,4 @@
-
+from typing import Type
 
 
 class GameState:
@@ -74,7 +74,7 @@ class GameState:
             if not cls.is_inside(x, y):
                 continue
 
-            if cls.is_piece(x, y) and cls.board[x][y].color == enemy_color:
+            if cls.is_piece(x, y) and cls.color(x,y) == enemy_color:
                 enemy_pos.append((x,y))
 
         return enemy_pos
@@ -87,8 +87,8 @@ class GameState:
 
     @classmethod
     def find_possible_actions(cls, x, y):
-        cls.moves = cls.board[x][y].can_move()
-        cls.captures = cls.board[x][y].can_capture()
+        cls.moves = cls.get(x,y).can_move()
+        cls.captures = cls.get(x,y).can_capture()
 
 
     @classmethod
@@ -104,7 +104,38 @@ class GameState:
     @classmethod
     def is_same_color(cls, x, y) -> bool:
         if cls.is_piece(x, y):
-            return cls.board[x][y].color == cls.selected.color
+            return cls.color(x,y) == cls.selected.color
+
+
+    @classmethod
+    def color(cls, x, y) -> str:
+        if cls.is_piece(x, y):
+            return cls.board[x][y].color
+
+
+    @classmethod
+    def get(cls, x, y) -> Type['Piece'] | None:
+        return cls.board[x][y]
+
+
+
+
+class Piece(GameState):
+    def __init__(self, name:str, color:str, position:tuple):
+        self.name = name
+        self.color = color
+        self.pos = position
+        self.image = None
+
+    
+    def get_info(self) -> str:
+        return f'{self.color}\n{self.name}\n{self.pos}'
+    
+
+    def __repr__(self):
+        return f'{self.color}{self.name}'
+
+
 
 
 if __name__ == '__main__':

@@ -1,0 +1,31 @@
+import tkinter as tk
+from gui import ChessBoard
+from game_state import GameState as game
+
+
+class Chess:
+    gui = ChessBoard(player_color='White')
+
+
+    def __init__(self):
+        self.gui.bind_to_squares(self.click_handler)
+        self.gui.mainloop()
+
+
+    def click_handler(self, x, y):
+        if game.can_select(x, y) and game.color(x,y) == self.gui.player:
+            game.select(x, y)
+
+        elif game.selected == game.get(x,y):
+            game.clear_selected()
+
+        elif game.can_change_selection(x, y):
+            game.select(x, y)
+            
+        else:
+            game.process_action(x, y)
+
+        self.gui.draw_elements()
+
+
+Chess()

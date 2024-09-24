@@ -1,22 +1,5 @@
 from tkinter import PhotoImage
-from game_state import GameState
-
-
-class Piece(GameState):
-    def __init__(self, name:str, color:str, position:tuple):
-        self.name = name
-        self.color = color
-        self.pos = position
-        self.image = None
-
-    
-    def get_info(self) -> str:
-        return f'{self.color}\n{self.name}\n{self.pos}'
-    
-
-    def __repr__(self):
-        return f'{self.color}{self.name}'
-
+from game_state import Piece
 
 
 
