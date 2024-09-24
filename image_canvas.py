@@ -6,13 +6,9 @@ class CircleImage(PhotoImage):
         super().__init__(file=file)
 
 
-
-
 class DotImage(PhotoImage):
     def __init__(self, file='assets/dot.png'):
         super().__init__(file=file)
-
-
 
 
 class IndicatorImage(PhotoImage):
@@ -20,28 +16,57 @@ class IndicatorImage(PhotoImage):
         super().__init__(file=file)
 
 
-
-class ImageCanvas(Canvas):
-    def __init__(self, parent, **kwargs):
-        super().__init__(parent, **kwargs)
-
-        self.indicator = self.create_image(27, 27, anchor='center')
-        self.image = self.create_image(27, 25, anchor='center')
-        self.highlight = self.create_image(27, 27, anchor='center')
-        
+class LightSquareImage(PhotoImage):
+    def __init__(self, file='assets/light_square.png'):
+        super().__init__(file=file)
 
 
-    def set_image(self, img):
-        self.itemconfig(self.image, image=img)
+class DarkSquareImage(PhotoImage):
+    def __init__(self, file='assets/dark_square.png'):
+        super().__init__(file=file)
+
+
+class Square:
+    def __init__(self, canvas):
+        self.canvas = canvas
+
+        def new_image():
+            return canvas.create_image(60, 60, anchor='nw')
+
+        self.bg = new_image()
+        self.highlight = new_image()
+        self.hover = new_image()
+        self.piece = new_image()
+        self.indicator = new_image()
+
+        self.elements = [self.bg,
+                         self.highlight,
+                         self.indicator,
+                         self.hover,
+                         self.piece]
+
+
+    def place(self, x, y):
+        for elem in self.elements:
+            self.canvas.moveto(elem, y, x)
+
+    
+    def set_bg(self, img):
+        self.canvas.itemconfig(self.bg, image=img)
 
 
     def set_highlight(self, img):
-        self.itemconfig(self.highlight, image=img)
+        self.canvas.itemconfig(self.highlight, image=img)
 
 
     def set_indicator(self, img):
-        self.itemconfig(self.indicator, image=img)
+        self.canvas.itemconfig(self.indicator, image=img)
 
 
-    def set_color(self, color):
-        self.config(bg=color)
+    def set_hover(self, img):
+        self.canvas.itemconfig(self.hover, image=img)
+
+
+    def set_piece(self, img):
+        self.canvas.itemconfig(self.piece, image=img)
+

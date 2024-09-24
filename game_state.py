@@ -7,6 +7,7 @@ class GameState:
     moves = None
     captures = None
     last_move = None
+    is_dragging = False
 
 
     @classmethod
