@@ -33,15 +33,20 @@ class ChessBoard(tk.Tk):
             game.clear_selected()
 
         elif game.selected and game.is_same_color(x, y):
-            if not Drag.stop_drag(self):
+            if not Drag.stop_drag():
                 Drag.start_drag(self, x, y)
-            
+
         elif (x,y) in game.can_move():
             if game.process_action(x, y):
                 Draw.draw_last_move(self)
+                Drag.stop_drag()
 
+        elif game.selected and not game.is_same_color(x, y):
+            if not Drag.stop_drag():
+                game.clear_selected()
+                
         else:
-            Drag.stop_drag(self)
+            Drag.stop_drag()
 
         Draw.draw_elements(self)
         self.board_ui[x][y].raise_piece()
@@ -52,7 +57,7 @@ class ChessBoard(tk.Tk):
             return
         
         if game.selected.pos == Util.get_mouse_pos(self, on_grid=True, invert=True):
-            Drag.stop_drag(self)
+            Drag.stop_drag()
             Draw.draw_pieces(self)
             game.select(*Util.get_mouse_pos(self, on_grid=True, invert=True))
         else:

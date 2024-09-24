@@ -20,7 +20,7 @@ class Drag:
         Drag.loop(root, x, y)
 
     @staticmethod
-    def stop_drag(root) -> bool:
+    def stop_drag() -> bool:
         if Drag.is_dragging:
             Drag.is_dragging = False
             game.clear_selected()
@@ -97,6 +97,11 @@ class Draw:
         Draw.draw_highlight(root)
         Draw.draw_indicator(root)
 
+
+    @staticmethod
+    def reset_lists():
+        Draw.highlights = list()
+        Draw.indicators = list()
 
 
 class Util:

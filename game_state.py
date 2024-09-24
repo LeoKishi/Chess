@@ -67,6 +67,9 @@ class GameState:
     def is_enemy(cls, piece, pos:list[tuple]) -> list:
         enemy_color = 'Black' if piece.color == 'White' else 'White'
         enemy_pos = list()
+
+        if type(pos[0]) != tuple:
+            pos = [pos]
         
         for x, y in pos:
             if not cls.is_inside(x, y):
@@ -96,7 +99,7 @@ class GameState:
 
     @classmethod
     def is_piece(cls, x, y) -> bool:
-        return cls.board[x][y] is not None
+        return cls.is_inside(x, y) and cls.board[x][y] is not None
 
 
     @classmethod
@@ -150,5 +153,7 @@ class Piece(GameState):
 
 
 if __name__ == '__main__':
-    a = GameState.is_inside(5,1)
-    print(a)
+    a = GameState.is_inside(7,2)
+    b = GameState.is_blocked(7,2)
+    c = GameState.is_inside(188764, 7)
+    print(c)
