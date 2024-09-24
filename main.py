@@ -4,9 +4,6 @@ from game_state import GameState as game
 
 
 # TODO:
-# ======= GUI =======
-# Highlight square that the piece is hovering
-
 # ======= logic =======
 # Rook logic
 # Knight logic

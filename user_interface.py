@@ -52,7 +52,8 @@ class ChessBoard(tk.Tk):
 
         if game.can_select(x, y) and game.color(x,y) == self.player:
             game.select(x, y)
-            self.start_drag(x, y)
+            self.is_dragging = True
+            self.drag_piece(x, y)
 
         elif game.selected == game.get(x,y):
             game.clear_selected()
@@ -63,7 +64,8 @@ class ChessBoard(tk.Tk):
                 game.clear_selected()
             else:
                 game.select(x, y)
-                self.start_drag(x, y)
+                self.is_dragging = True
+                self.drag_piece(x, y)
             
             
         elif (x,y) in game.can_move():
@@ -88,12 +90,6 @@ class ChessBoard(tk.Tk):
             self.draw_squares()
         else:
             self.click_handler(*self.get_mouse_pos(invert=True))
-            
-
-
-    def start_drag(self, x, y):
-        self.is_dragging = True
-        self.drag_piece(x, y)
 
 
     def drag_piece(self, x, y):
@@ -227,9 +223,15 @@ class ChessBoard(tk.Tk):
         y = self.winfo_pointery() - self.winfo_rooty()
 
         if on_grid:
-            x, y = x//60, y//60
-
+            x, y = self.clamp(x//60, 0, 7), self.clamp(y//60, 0, 7)
+        else:
+            x, y = self.clamp(x, 0, 479), self.clamp(y, 0, 479)
+        
         if invert:
             return (y, x)
 
         return (x, y)
+    
+
+    def clamp(self, n, minn, maxn):
+        return max(min(maxn, n), minn)
