@@ -26,6 +26,11 @@ class DarkSquareImage(PhotoImage):
         super().__init__(file=file)
 
 
+class HoverImage(PhotoImage):
+    def __init__(self, file='assets/hover.png'):
+        super().__init__(file=file)
+
+
 class Square:
     def __init__(self, canvas):
         self.canvas = canvas
@@ -48,17 +53,17 @@ class Square:
 
 
     def move(self, mouse_x, mouse_y):
-        self.raise_element(self.piece)
         self.canvas.moveto(self.piece, mouse_x-30, mouse_y-30)
 
         
-    def raise_element(self, element):
-        self.canvas.tag_raise(element)
+    def raise_piece(self):
+        self.canvas.tag_raise(self.piece)
 
 
     def place(self, x, y):
         for elem in self.elements:
             self.canvas.moveto(elem, y, x)
+        self.raise_piece()
 
     
     def set_bg(self, img):

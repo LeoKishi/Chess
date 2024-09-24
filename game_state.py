@@ -7,21 +7,23 @@ class GameState:
     moves = None
     captures = None
     last_move = None
-    is_dragging = False
+
 
 
     @classmethod
-    def process_action(cls, x, y):
-        if cls.selected is None:
-            return
-
+    def process_action(cls, x, y) -> bool:
         if (x,y) in cls.moves:
             cls.register(cls.selected, (x,y))
 
         elif (x,y) in cls.captures:
             cls.register(cls.selected, (x,y))
+
+        else:
+            cls.clear_selected()
+            return False
         
         cls.clear_selected()
+        return True
 
 
     @classmethod
@@ -41,12 +43,6 @@ class GameState:
     @classmethod
     def can_select(cls, x, y) -> bool:
         return cls.selected is None and cls.is_piece(x, y)
-
-
-    @classmethod
-    def can_change_selection(cls, x, y) -> bool:
-        if cls.selected is not None:
-            return cls.is_piece(x, y) and cls.is_same_color(x, y)
 
 
     @classmethod
@@ -108,6 +104,19 @@ class GameState:
     def is_same_color(cls, x, y) -> bool:
         if cls.is_piece(x, y):
             return cls.color(x,y) == cls.selected.color
+
+
+    @classmethod
+    def can_move(cls) -> list:
+        possible_moves = list()
+
+        if cls.moves is not None:
+            possible_moves += cls.moves
+
+        if cls.captures is not None:
+            possible_moves += cls.captures
+
+        return possible_moves
 
 
     @classmethod

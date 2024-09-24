@@ -1,11 +1,10 @@
 import tkinter as tk
-from gui import ChessBoard
+from user_interface import ChessBoard
 from game_state import GameState as game
 
 
 # TODO:
 # ======= GUI =======
-# Drag piece by holding click
 # Highlight square that the piece is hovering
 # Place piece in square if it is a valid move
 
@@ -31,7 +30,7 @@ from game_state import GameState as game
 
 
 class Chess:
-    gui = ChessBoard(player_color='White')
+    gui = ChessBoard(player_color='Black')
 
 
     def __init__(self):

@@ -1,7 +1,7 @@
 import tkinter as tk
-from image import *
+from image_loader import *
 from game_state import GameState as game
-from logic import *
+from piece_behavior import *
 
 
 class ChessBoard(tk.Tk):
@@ -16,6 +16,7 @@ class ChessBoard(tk.Tk):
         self.player = player_color
         self.highlights = list()
         self.indicators = list()
+        self.is_dragging = False
         
         self.load_images()
         self.create_board()
@@ -29,82 +30,90 @@ class ChessBoard(tk.Tk):
         self.circle_img = CircleImage()
         self.dot_img = DotImage()
         self.indicator_img = IndicatorImage()
-        #self.hover_img = HoverImage()
+        self.hover_img = HoverImage()
 
 
     def create_board(self):
         self.canvas = tk.Canvas(self, height=480, width=480)
         self.canvas.pack()
-        self.draw_grid()
+        self.create_grid()
         self.populate_board()
-        self.draw_elements()
+        self.draw_squares()
 
-    # broken
+
     def bind_functions(self):
-        self.bind('<ButtonPress-1>', self.click_handler)
+        self.bind('<ButtonPress-1>', lambda event: self.click_handler(event.y, event.x))
         self.bind('<ButtonRelease-1>', self.click_release)
 
 
-    def click_handler(self, event):
-        x, y = event.y//60, event.x//60
+    def click_handler(self, raw_x, raw_y):
+        x, y = raw_x//60, raw_y//60
 
         if game.can_select(x, y) and game.color(x,y) == self.player:
             game.select(x, y)
+            self.start_drag(x, y)
 
         elif game.selected == game.get(x,y):
             game.clear_selected()
 
-        elif game.can_change_selection(x, y):
-            game.select(x, y)
+        elif game.is_same_color(x, y):
+            if self.is_dragging:
+                game.select(x, y)
+                self.start_drag(x, y)
+            else:
+                game.clear_selected()
             
-        else:
-            game.process_action(x, y)
+        elif (x,y) in game.can_move():
+            if game.process_action(x, y):
+                self.draw_move()
 
-        if game.selected:
-            game.is_dragging = True
-            self.drag_piece(x, y)
+        else:
+            game.clear_selected()
 
         self.draw_elements()
 
 
-    def click_release(self, event=None):
-        game.is_dragging = False
+    def click_release(self, event):
+        self.is_dragging = False
+        x, y = self.get_mouse_pos(invert=True)
+        if game.selected is not None and game.selected.pos != (x//60, y//60):
+            self.click_handler(x, y)
 
 
-    # broken
+    def start_drag(self, x, y):
+        self.is_dragging = True
+        self.board_ui[x][y].raise_piece()
+        self.drag_piece(x, y)
+
+
     def drag_piece(self, x, y):
-        if game.is_dragging:
-            self.board_ui[x][y].raise_element(self.board_ui[x][y].piece)
+        if self.is_dragging:
             self.board_ui[x][y].move(*self.get_mouse_pos())
-
+            #self.board_ui[x][y].set_hover(self.hover_img)
             self.after(1000//60, self.drag_piece, *(x, y))
 
 
-    def draw_grid(self):
-        for x in range(8):
-            for y in range(8):
-                self.board_ui[x][y] = Square(self.canvas)
-                self.board_ui[x][y].place(x*60, y*60)
+    def hover_highlight(self, x, y):
+        ...
 
-    
+
+
+
+
+
     def draw_elements(self):
-        for x in range(8):
-            for y in range(8):
-                self.draw_square(x, y)
-
+        self.draw_squares()
         self.draw_highlight()
         self.draw_indicator()
 
 
-    def draw_square(self, x, y):
-        piece = game.get(x,y)
-
-        if piece is None:
-            img = ''
-        else:
-            img = piece.image
-
-        self.board_ui[x][y].set_piece(img)
+    def draw_move(self):
+        old_pos, new_pos = game.last_move
+        new_x, new_y = new_pos
+        old_x, old_y = old_pos
+    
+        self.board_ui[new_x][new_y].set_piece(game.get(*new_pos).image)
+        self.board_ui[old_x][old_y].set_piece('')
 
 
     def draw_highlight(self):
@@ -132,15 +141,18 @@ class ChessBoard(tk.Tk):
                 self.indicators.append((x,y))
 
 
-    def set_board_color(self, player1):
-        offset = 1 if player1 == 'White' else 0
-
+    def create_grid(self):
         for x in range(8):
             for y in range(8):
-                if (x+y+offset) % 2 == 0:
-                    self.board_ui[x][y].set_bg(self.lightbg_img)
-                else:
-                    self.board_ui[x][y].set_bg(self.darkbg_img)
+                self.board_ui[x][y] = Square(self.canvas)
+                
+
+    def draw_squares(self):
+        for x in range(8):
+            for y in range(8):
+                piece = game.get(x,y)
+                self.board_ui[x][y].set_piece('' if piece is None else piece.image)
+                self.board_ui[x][y].place(x*60, y*60)
 
 
     def populate_board(self):
@@ -181,7 +193,22 @@ class ChessBoard(tk.Tk):
         new_piece(King, player1, (7,4-offset))
         
 
-    def get_mouse_pos(self) -> tuple:
+    def set_board_color(self, player1):
+        offset = 1 if player1 == 'White' else 0
+
+        for x in range(8):
+            for y in range(8):
+                if (x+y+offset) % 2 == 0:
+                    self.board_ui[x][y].set_bg(self.lightbg_img)
+                else:
+                    self.board_ui[x][y].set_bg(self.darkbg_img)
+
+
+    def get_mouse_pos(self, invert=False) -> tuple:
         x = self.winfo_pointerx() - self.winfo_rootx()
         y = self.winfo_pointery() - self.winfo_rooty()
+
+        if invert:
+            return (y, x)
+
         return (x, y)
