@@ -238,3 +238,8 @@ class ChessBoard(tk.Tk):
 
     def clamp(self, n, minn, maxn):
         return max(min(maxn, n), minn)
+    
+
+
+if __name__ == '__main__':
+    ChessBoard().mainloop()
