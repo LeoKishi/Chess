@@ -55,24 +55,6 @@ class Rook(Piece):
         self.image = w_rook if color == 'White' else b_rook
 
 
-    def walk(self, direction):
-        x, y = self.pos
-        mod_x, mod_y = direction
-        path = list()
-
-        while True:
-            x += mod_x
-            y += mod_y
-            if self.is_blocked(x, y) or not self.is_inside(x, y):
-                break
-            else:
-                path.append((x,y))
-
-        return path
-
-
-
-
     def can_move(self) -> list:
         moves = list()
         directions = ((-1,0), (1,0), (0,-1), (0,1))
@@ -168,6 +150,56 @@ class Bishop(Piece):
         self.image = w_bishop if color == 'White' else b_bishop
 
 
+    def can_move(self) -> list:
+        moves = list()
+        directions = ((-1,-1), (1,-1), (1,+1), (-1,+1))
+
+        def walk(direction):
+            x, y = self.pos
+            mod_x, mod_y = direction
+            path = list()
+            while True:
+                x += mod_x
+                y += mod_y
+                if self.is_blocked(x, y) or not self.is_inside(x, y):
+                    break
+                else:
+                    path.append((x,y))
+            return path
+        
+        for i in directions:
+            moves += walk(i)
+
+        return moves
+
+
+    def can_capture(self) -> list:
+        captures = list()
+        directions = ((-1,-1), (1,-1), (1,+1), (-1,+1))
+
+        def walk(direction):
+            x, y = self.pos
+            mod_x, mod_y = direction
+            path = list()
+            while True:
+                x += mod_x
+                y += mod_y
+                if not self.is_inside(x,y):
+                    break
+                if not self.is_piece(x,y):
+                    continue
+                if self.is_enemy(self, (x,y)):
+                    path.append((x,y))
+                break    
+            return path
+        
+        for i in directions:
+            captures += walk(i)
+
+        return captures
+
+
+
 
 class Queen(Piece):
     def __init__(self, color:str, position:tuple):
@@ -176,6 +208,58 @@ class Queen(Piece):
         w_queen = loader.get_sprite((60,60), (1,0))
         b_queen = loader.get_sprite((60,60), (0,0))
         self.image = w_queen if color == 'White' else b_queen
+
+
+    def can_move(self) -> list:
+        moves = list()
+        directions = ((-1,-1), (1,-1), (1,+1), (-1,+1),
+                      (-1,0), (1,0), (0,-1), (0,1))
+
+        def walk(direction):
+            x, y = self.pos
+            mod_x, mod_y = direction
+            path = list()
+            while True:
+                x += mod_x
+                y += mod_y
+                if self.is_blocked(x, y) or not self.is_inside(x, y):
+                    break
+                else:
+                    path.append((x,y))
+            return path
+        
+        for i in directions:
+            moves += walk(i)
+
+        return moves
+
+
+    def can_capture(self) -> list:
+        captures = list()
+        directions = ((-1,-1), (1,-1), (1,+1), (-1,+1),
+                      (-1,0), (1,0), (0,-1), (0,1))
+
+        def walk(direction):
+            x, y = self.pos
+            mod_x, mod_y = direction
+            path = list()
+            while True:
+                x += mod_x
+                y += mod_y
+                if not self.is_inside(x,y):
+                    break
+                if not self.is_piece(x,y):
+                    continue
+                if self.is_enemy(self, (x,y)):
+                    path.append((x,y))
+                break    
+            return path
+        
+        for i in directions:
+            captures += walk(i)
+
+        return captures
+
 
 
 
