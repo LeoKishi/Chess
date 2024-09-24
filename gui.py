@@ -1,5 +1,5 @@
 import tkinter as tk
-from image_canvas import ImageCanvas, BlankImage
+from image_canvas import *
 from game_state import GameState as gs
 from logic import *
 
@@ -9,37 +9,42 @@ class Display(tk.Tk):
         super().__init__()
 
         self.title('Chess')
-        self.board_ui = [[None for row in range(8)] for col in range(8)]
-        self.blank = BlankImage()
+        self.board_ui = [[None for x in range(8)] for y in range(8)]
+        self.blank_img = BlankImage()
+        self.circle_img = CircleImage()
+        self.dot_img = DotImage()
 
         self.create_board()
-        self.set_board_color('#d4d4d4', 'white')
         self.populate_board(player1='White')
         self.update_board()
 
     
     def create_board(self):
-        for row in range(8):
-            for col in range(8):
-                self.board_ui[row][col] = ImageCanvas(self, height=70, width=70, bg='#d5ebde')
-                self.board_ui[row][col].bind('<Button-1>', lambda event=None, x=row, y=col: self.handler(x,y))
-                self.board_ui[row][col].pack_propagate(0)
-                self.board_ui[row][col].grid(row=row, column=col)
+        for x in range(8):
+            for y in range(8):
+                self.board_ui[x][y] = ImageCanvas(self, height=50, width=50, bg='#d5ebde')
+                self.board_ui[x][y].bind('<Button-1>', lambda event=None, x=x, y=y: self.click_handler(x,y))
+                self.board_ui[x][y].pack_propagate(0)
+                self.board_ui[x][y].grid(row=x, column=y)
 
 
-    def set_board_color(self, color1, color2):
-        for row in range(8):
-            for col in range(8):
-                if (row+col) % 2 != 0:
-                    self.board_ui[row][col].set_color(color1)
+    def set_board_color(self, player1, color1, color2):
+        offset = 1 if player1 == 'White' else 0
+
+        for x in range(8):
+            for y in range(8):
+                if (x+y+offset) % 2 == 0:
+                    self.board_ui[x][y].set_color(color1)
                 else:
-                    self.board_ui[row][col].set_color(color2)
+                    self.board_ui[x][y].set_color(color2)
 
 
-    def handler(self, x, y):
+    def click_handler(self, x, y):
         if gs.selected is None:
+
             if gs.board[x][y] is None:
                 return
+            
             gs.selected = gs.board[x][y]
             gs.find_possible_actions(x, y)
 
@@ -50,26 +55,46 @@ class Display(tk.Tk):
     
 
     def update_board(self):
-        for row in range(8):
-            for col in range(8):
-                piece = gs.board[row][col]
+        for x in range(8):
+            for y in range(8):
+                self.draw_square(x, y)
+                self.draw_highlight(x, y)
 
-                if piece is None:
-                    img = self.blank
-                elif piece.color == 'White':
-                    img = piece.white_img
-                else:
-                    img = piece.black_img
 
-                self.board_ui[row][col].set_image(img)
+    def draw_square(self, x, y):
+        piece = gs.board[x][y]
+
+        if piece is None:
+            img = self.blank_img
+
+        elif piece.color == 'White':
+            img = piece.white_img
+
+        else:
+            img = piece.black_img
+
+        self.board_ui[x][y].set_image(img)
+
+
+    def draw_highlight(self, x, y):
+        if gs.selected is None:
+            self.board_ui[x][y].set_highlight(self.blank_img)
+            return
+        
+        if (x,y) in gs.moves:
+            self.board_ui[x][y].set_highlight(self.dot_img)
+
+        elif (x,y) in gs.captures:
+            self.board_ui[x][y].set_highlight(self.circle_img)
 
 
     def populate_board(self, player1:str):
+        self.set_board_color(player1, '#d4d4d4', 'white')
         player2 = 'Black' if player1 == 'White' else 'White'
 
-        for col in range(8):
-            self.new_piece(Pawn, player2, (1,col))
-            self.new_piece(Pawn, player1, (6,col))
+        for y in range(8):
+            self.new_piece(Pawn, player2, (1,y))
+            self.new_piece(Pawn, player1, (6,y))
 
         self.new_piece(Pawn, player2, (5,2))
 
@@ -88,11 +113,13 @@ class Display(tk.Tk):
         self.new_piece(Bishop, player1, (7,2))
         self.new_piece(Bishop, player1, (7,5))
 
-        self.new_piece(Queen, player2, (0,3))
-        self.new_piece(Queen, player1, (7,3))
+        offset = 1 if player1 == 'Black' else 0
 
-        self.new_piece(King, player2, (0,4))
-        self.new_piece(King, player1, (7,4))
+        self.new_piece(Queen, player2, (0,3+offset))
+        self.new_piece(Queen, player1, (7,3+offset))
+
+        self.new_piece(King, player2, (0,4-offset))
+        self.new_piece(King, player1, (7,4-offset))
 
 
     def new_piece(self, piece_type, color, pos):
@@ -103,8 +130,6 @@ class Display(tk.Tk):
             img = piece.white_img
         else:
             img = piece.black_img
-
-        piece.tklabel = tk.Label(self.board_ui[pos[0]][pos[1]], image=img)
 
 
 
