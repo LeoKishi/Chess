@@ -65,6 +65,31 @@ class Knight(Piece):
         self.image = w_knight if color == 'White' else b_knight
 
 
+    def can_move(self) -> list:
+        x, y = self.pos
+        moves = list()
+        jumps = ((x-1,y-2), (x+1,y-2), 
+                 (x+2,y-1), (x+2,y+1), 
+                 (x+1,y+2), (x-1,y+2), 
+                 (x-2,y-1), (x-2,y+1))
+        
+        for i in jumps:
+            if self.is_inside(*i) and not self.is_blocked(*i):
+                moves.append(i)
+
+        return moves
+
+
+    def can_capture(self) -> list:
+        x, y = self.pos
+        jumps = ((x-1,y-2), (x+1,y-2), 
+                 (x+2,y-1), (x+2,y+1), 
+                 (x+1,y+2), (x-1,y+2), 
+                 (x-2,y-1), (x-2,y+1))
+
+        return self.is_enemy(self, jumps)
+
+
 
 class Bishop(Piece):
     def __init__(self, color:str, position:tuple):

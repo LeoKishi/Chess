@@ -67,7 +67,7 @@ class GameState:
     def is_enemy(cls, piece, pos:list[tuple]) -> list:
         enemy_color = 'Black' if piece.color == 'White' else 'White'
         enemy_pos = list()
-
+        
         for x, y in pos:
             if not cls.is_inside(x, y):
                 continue

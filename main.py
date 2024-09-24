@@ -1,7 +1,7 @@
 import tkinter as tk
 from game_state import GameState as game
 from board_loader import BoardLoader
-from gui_logic import *
+from gui_behavior import *
 
 
 class ChessBoard(tk.Tk):
@@ -9,12 +9,18 @@ class ChessBoard(tk.Tk):
         super().__init__()
         self.title('Chess')
         self.geometry('480x480')
+        self.resizable(0,0)
 
         self.board_ui = [[None for x in range(8)] for y in range(8)]
         self.player = player_color
 
         BoardLoader.create_board(self)
         Draw.draw_pieces(self)
+
+
+    def bind_functions(self):
+        self.bind('<ButtonPress-1>', lambda event: self.click_handler(event.y, event.x))
+        self.bind('<ButtonRelease-1>', self.click_release)
 
 
     def click_handler(self, raw_x, raw_y):
@@ -51,11 +57,6 @@ class ChessBoard(tk.Tk):
             game.select(*Util.get_mouse_pos(self, on_grid=True, invert=True))
         else:
             self.click_handler(*Util.get_mouse_pos(self, invert=True))
-
-    
-    def bind_functions(self):
-        self.bind('<ButtonPress-1>', lambda event: self.click_handler(event.y, event.x))
-        self.bind('<ButtonRelease-1>', self.click_release)
 
 
 
