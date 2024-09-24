@@ -44,6 +44,16 @@ class Square:
                          self.indicator,
                          self.hover,
                          self.piece]
+        
+
+
+    def move(self, mouse_x, mouse_y):
+        self.raise_element(self.piece)
+        self.canvas.moveto(self.piece, mouse_x-30, mouse_y-30)
+
+        
+    def raise_element(self, element):
+        self.canvas.tag_raise(element)
 
 
     def place(self, x, y):

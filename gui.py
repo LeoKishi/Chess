@@ -1,9 +1,7 @@
 import tkinter as tk
-from image_canvas import *
+from image import *
 from game_state import GameState as game
 from logic import *
-
-from SpriteLoader import SpriteSheet
 
 
 class ChessBoard(tk.Tk):
@@ -19,16 +17,18 @@ class ChessBoard(tk.Tk):
         self.highlights = list()
         self.indicators = list()
         
-        self.create_images()
+        self.load_images()
         self.create_board()
+
+        self.bind_functions()
         
 
-    def create_images(self):
+    def load_images(self):
+        self.lightbg_img = LightSquareImage()
+        self.darkbg_img = DarkSquareImage()
         self.circle_img = CircleImage()
         self.dot_img = DotImage()
         self.indicator_img = IndicatorImage()
-        self.lightbg_img = LightSquareImage()
-        self.darkbg_img = DarkSquareImage()
         #self.hover_img = HoverImage()
 
 
@@ -40,15 +40,43 @@ class ChessBoard(tk.Tk):
         self.draw_elements()
 
     # broken
-    def bind_functions(self, *, click, release):
-        pass
-    
+    def bind_functions(self):
+        self.bind('<ButtonPress-1>', self.click_handler)
+        self.bind('<ButtonRelease-1>', self.click_release)
+
+
+    def click_handler(self, event):
+        x, y = event.y//60, event.x//60
+
+        if game.can_select(x, y) and game.color(x,y) == self.player:
+            game.select(x, y)
+
+        elif game.selected == game.get(x,y):
+            game.clear_selected()
+
+        elif game.can_change_selection(x, y):
+            game.select(x, y)
+            
+        else:
+            game.process_action(x, y)
+
+        if game.selected:
+            game.is_dragging = True
+            self.drag_piece(x, y)
+
+        self.draw_elements()
+
+
+    def click_release(self, event=None):
+        game.is_dragging = False
+
+
     # broken
     def drag_piece(self, x, y):
         if game.is_dragging:
-            self.hover_img.set_image(game.selected.image)
-            mouse_x, mouse_y = self.get_mouse_pos()
-            self.hover_img.place(x=mouse_x-22, y=mouse_y-22)
+            self.board_ui[x][y].raise_element(self.board_ui[x][y].piece)
+            self.board_ui[x][y].move(*self.get_mouse_pos())
+
             self.after(1000//60, self.drag_piece, *(x, y))
 
 
@@ -78,7 +106,7 @@ class ChessBoard(tk.Tk):
 
         self.board_ui[x][y].set_piece(img)
 
-    # broken ?
+
     def draw_highlight(self):
         for x,y in self.highlights:
             self.board_ui[x][y].set_highlight('')
@@ -93,7 +121,7 @@ class ChessBoard(tk.Tk):
                 self.board_ui[x][y].set_highlight(self.circle_img)
                 self.highlights.append((x,y))
 
-    # broken ?
+
     def draw_indicator(self):
         for x,y in self.indicators:
             self.board_ui[x][y].set_indicator('')
@@ -151,7 +179,7 @@ class ChessBoard(tk.Tk):
 
         new_piece(King, player2, (0,4-offset))
         new_piece(King, player1, (7,4-offset))
-
+        
 
     def get_mouse_pos(self) -> tuple:
         x = self.winfo_pointerx() - self.winfo_rootx()

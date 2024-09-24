@@ -35,33 +35,14 @@ class Chess:
 
 
     def __init__(self):
-        self.gui.bind_functions(click=self.click_handler,
-                                release=self.click_release)
+
         self.gui.mainloop()
 
 
-    def click_handler(self, x, y):
-        if game.can_select(x, y) and game.color(x,y) == self.gui.player:
-            game.select(x, y)
-
-        elif game.selected == game.get(x,y):
-            game.clear_selected()
-
-        elif game.can_change_selection(x, y):
-            game.select(x, y)
-            
-        else:
-            game.process_action(x, y)
-
-        if game.selected:
-            game.is_dragging = True
-            #self.gui.drag_piece(x, y)
-
-        self.gui.draw_elements()
 
 
-    def click_release(self, x, y):
-        game.is_dragging = False
+
+
 
 
 
