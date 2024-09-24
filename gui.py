@@ -10,9 +10,9 @@ class Display(tk.Tk):
 
         self.title('Chess')
         self.board_ui = [[None for x in range(8)] for y in range(8)]
-        self.blank_img = BlankImage()
         self.circle_img = CircleImage()
         self.dot_img = DotImage()
+        self.highlights = list()
 
         self.create_board()
         self.populate_board(player1='White')
@@ -41,15 +41,16 @@ class Display(tk.Tk):
 
     def click_handler(self, x, y):
         if gs.selected is None:
+            gs.select(x, y)
 
-            if gs.board[x][y] is None:
-                return
+        elif gs.selected == gs.board[x][y]:
+            gs.clear_selected()
+
+        elif gs.can_change_selection(x, y):
+            gs.select(x, y)
             
-            gs.selected = gs.board[x][y]
-            gs.find_possible_actions(x, y)
-
         else:
-            gs.process_action(x,y)
+            gs.process_action(x, y)
 
         self.update_board()
     
@@ -58,14 +59,15 @@ class Display(tk.Tk):
         for x in range(8):
             for y in range(8):
                 self.draw_square(x, y)
-                self.draw_highlight(x, y)
+
+        self.draw_highlight(x, y)
 
 
     def draw_square(self, x, y):
         piece = gs.board[x][y]
 
         if piece is None:
-            img = self.blank_img
+            img = ''
 
         elif piece.color == 'White':
             img = piece.white_img
@@ -77,15 +79,18 @@ class Display(tk.Tk):
 
 
     def draw_highlight(self, x, y):
-        if gs.selected is None:
-            self.board_ui[x][y].set_highlight(self.blank_img)
-            return
-        
-        if (x,y) in gs.moves:
-            self.board_ui[x][y].set_highlight(self.dot_img)
+        for x,y in self.highlights:
+            self.board_ui[x][y].set_highlight('')
 
-        elif (x,y) in gs.captures:
-            self.board_ui[x][y].set_highlight(self.circle_img)
+        if gs.moves:
+            for x,y in gs.moves:
+                self.board_ui[x][y].set_highlight(self.dot_img)
+                self.highlights.append((x,y))
+
+        if gs.captures:
+            for x,y in gs.captures:
+                self.board_ui[x][y].set_highlight(self.circle_img)
+                self.highlights.append((x,y))
 
 
     def populate_board(self, player1:str):
@@ -125,12 +130,6 @@ class Display(tk.Tk):
     def new_piece(self, piece_type, color, pos):
         gs.board[pos[0]][pos[1]] = piece_type(color, pos)
         piece = gs.board[pos[0]][pos[1]]
-
-        if color == 'White':
-            img = piece.white_img
-        else:
-            img = piece.black_img
-
 
 
 

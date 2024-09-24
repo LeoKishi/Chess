@@ -27,6 +27,23 @@ class GameState:
 
 
     @classmethod
+    def select(cls, x, y):
+        if cls.board[x][y] is not None:
+            cls.clear_selected()
+            cls.selected = cls.board[x][y]
+            cls.find_possible_actions(x, y)
+
+
+    @classmethod
+    def can_change_selection(cls, x, y) -> bool:
+        if cls.board[x][y] is None:
+            return False
+            
+        if cls.selected.color == cls.board[x][y].color:
+            return True
+
+
+    @classmethod
     def register(cls, piece, new_pos:list|tuple):
         old_x, old_y = piece.pos
         new_x, new_y = new_pos

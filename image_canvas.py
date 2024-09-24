@@ -1,11 +1,6 @@
 from tkinter import Canvas, PhotoImage
 
 
-class BlankImage(PhotoImage):
-    def __init__(self, file='assets/empty.png'):
-        super().__init__(file=file)
-
-
 class CircleImage(PhotoImage):
     def __init__(self, file='assets/circle.png'):
         super().__init__(file=file)
