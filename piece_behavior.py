@@ -59,21 +59,8 @@ class Rook(Piece):
         moves = list()
         directions = ((-1,0), (1,0), (0,-1), (0,1))
 
-        def walk(direction):
-            x, y = self.pos
-            mod_x, mod_y = direction
-            path = list()
-            while True:
-                x += mod_x
-                y += mod_y
-                if self.is_blocked(x, y) or not self.is_inside(x, y):
-                    break
-                else:
-                    path.append((x,y))
-            return path
-        
         for i in directions:
-            moves += walk(i)
+            moves += self.find_path(i)
 
         return moves
 
@@ -82,24 +69,8 @@ class Rook(Piece):
         captures = list()
         directions = ((-1,0), (1,0), (0,-1), (0,1))
 
-        def walk(direction):
-            x, y = self.pos
-            mod_x, mod_y = direction
-            path = list()
-            while True:
-                x += mod_x
-                y += mod_y
-                if not self.is_inside(x,y):
-                    break
-                if not self.is_piece(x,y):
-                    continue
-                if self.is_enemy(self, (x,y)):
-                    path.append((x,y))
-                break    
-            return path
-        
         for i in directions:
-            captures += walk(i)
+            captures += self.find_captures(i)
 
         return captures
 
@@ -118,10 +89,8 @@ class Knight(Piece):
     def can_move(self) -> list:
         x, y = self.pos
         moves = list()
-        jumps = ((x-1,y-2), (x+1,y-2), 
-                 (x+2,y-1), (x+2,y+1), 
-                 (x+1,y+2), (x-1,y+2), 
-                 (x-2,y-1), (x-2,y+1))
+        jumps = ((x-1,y-2), (x+1,y-2), (x+2,y-1), (x+2,y+1), 
+                 (x+1,y+2), (x-1,y+2), (x-2,y-1), (x-2,y+1))
         
         for i in jumps:
             if self.is_inside(*i) and not self.is_blocked(*i):
@@ -132,10 +101,8 @@ class Knight(Piece):
 
     def can_capture(self) -> list:
         x, y = self.pos
-        jumps = ((x-1,y-2), (x+1,y-2), 
-                 (x+2,y-1), (x+2,y+1), 
-                 (x+1,y+2), (x-1,y+2), 
-                 (x-2,y-1), (x-2,y+1))
+        jumps = ((x-1,y-2), (x+1,y-2), (x+2,y-1), (x+2,y+1), 
+                 (x+1,y+2), (x-1,y+2), (x-2,y-1), (x-2,y+1))
 
         return self.is_enemy(self, jumps)
 
@@ -154,21 +121,8 @@ class Bishop(Piece):
         moves = list()
         directions = ((-1,-1), (1,-1), (1,+1), (-1,+1))
 
-        def walk(direction):
-            x, y = self.pos
-            mod_x, mod_y = direction
-            path = list()
-            while True:
-                x += mod_x
-                y += mod_y
-                if self.is_blocked(x, y) or not self.is_inside(x, y):
-                    break
-                else:
-                    path.append((x,y))
-            return path
-        
         for i in directions:
-            moves += walk(i)
+            moves += self.find_path(i)
 
         return moves
 
@@ -177,24 +131,8 @@ class Bishop(Piece):
         captures = list()
         directions = ((-1,-1), (1,-1), (1,+1), (-1,+1))
 
-        def walk(direction):
-            x, y = self.pos
-            mod_x, mod_y = direction
-            path = list()
-            while True:
-                x += mod_x
-                y += mod_y
-                if not self.is_inside(x,y):
-                    break
-                if not self.is_piece(x,y):
-                    continue
-                if self.is_enemy(self, (x,y)):
-                    path.append((x,y))
-                break    
-            return path
-        
         for i in directions:
-            captures += walk(i)
+            captures += self.find_captures(i)
 
         return captures
 
@@ -215,21 +153,8 @@ class Queen(Piece):
         directions = ((-1,-1), (1,-1), (1,+1), (-1,+1),
                       (-1,0), (1,0), (0,-1), (0,1))
 
-        def walk(direction):
-            x, y = self.pos
-            mod_x, mod_y = direction
-            path = list()
-            while True:
-                x += mod_x
-                y += mod_y
-                if self.is_blocked(x, y) or not self.is_inside(x, y):
-                    break
-                else:
-                    path.append((x,y))
-            return path
-        
         for i in directions:
-            moves += walk(i)
+            moves += self.find_path(i)
 
         return moves
 
@@ -239,24 +164,8 @@ class Queen(Piece):
         directions = ((-1,-1), (1,-1), (1,+1), (-1,+1),
                       (-1,0), (1,0), (0,-1), (0,1))
 
-        def walk(direction):
-            x, y = self.pos
-            mod_x, mod_y = direction
-            path = list()
-            while True:
-                x += mod_x
-                y += mod_y
-                if not self.is_inside(x,y):
-                    break
-                if not self.is_piece(x,y):
-                    continue
-                if self.is_enemy(self, (x,y)):
-                    path.append((x,y))
-                break    
-            return path
-        
         for i in directions:
-            captures += walk(i)
+            captures += self.find_captures(i)
 
         return captures
 
@@ -271,6 +180,29 @@ class King(Piece):
         b_king = loader.get_sprite((60,60), (0,1))
         self.image = w_king if color == 'White' else b_king
         self.first_move = True
+
+
+    def can_move(self) -> list:
+        x, y = self.pos
+        moves = list()
+        directions = ((x-1,y-1), (x+1,y-1), (x+1,y+1), (x-1,y+1),
+                      (x-1,y+0), (x+1,y+0), (x+0,y-1), (x+0,y+1))
+        
+        for i in directions:
+            if self.is_inside(*i) and not self.is_blocked(*i):
+                moves.append(i)
+
+        return moves
+
+
+    def can_capture(self) -> list:
+        x, y = self.pos
+        directions = ((x-1,y-1), (x+1,y-1), (x+1,y+1), (x-1,y+1),
+                      (x-1,y+0), (x+1,y+0), (x+0,y-1), (x+0,y+1))
+
+        return self.is_enemy(self, directions)
+
+
 
 
 if __name__ == '__main__':

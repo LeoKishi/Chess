@@ -93,6 +93,39 @@ class GameState:
 
 
     @classmethod
+    def find_path(cls, direction):
+        x, y = cls.selected.pos
+        mod_x, mod_y = direction
+        path = list()
+        while True:
+            x += mod_x
+            y += mod_y
+            if cls.is_blocked(x, y) or not cls.is_inside(x, y):
+                break
+            else:
+                path.append((x,y))
+        return path
+
+
+    @classmethod
+    def find_captures(cls, direction):
+        x, y = cls.selected.pos
+        mod_x, mod_y = direction
+        captures = list()
+        while True:
+            x += mod_x
+            y += mod_y
+            if not cls.is_inside(x,y):
+                break
+            if not cls.is_piece(x,y):
+                continue
+            if cls.is_enemy(cls.selected, (x,y)):
+                captures.append((x,y))
+            break    
+        return captures
+
+
+    @classmethod
     def is_inside(cls, x, y) -> bool:
         return (0 <= x < 8) and (0 <= y < 8)
 
