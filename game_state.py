@@ -69,18 +69,16 @@ class GameState:
     def find_checks(cls, piece):
         moves = list()
 
-        for x in range(8):
-            for y in range(8):
-                if not cls.is_piece(x,y):
-                    continue
+        for x, y in Util.range2d():
+            if not cls.is_piece(x,y):
+                continue
 
-                elif not cls.get(x,y).color == piece.color:
-                    continue
+            elif cls.get(x,y).color == piece.color:
+                moves += cls.get(x,y).can_capture()
 
-                if cls.get(x,y).name == 'Rook':
-                    a = cls.get(x,y).can_capture()
-                    print(a)
-
+        for i in list(set(moves)):
+            if cls.get(*i).name == 'King':
+                print('check')
 
 
     @classmethod
@@ -202,6 +200,15 @@ class GameState:
         return cls.board[x][y]
 
 
+
+
+class Util:
+
+    @staticmethod
+    def range2d():
+        for x in range(8):
+            for y in range(8):
+                yield (x,y)
 
 
 

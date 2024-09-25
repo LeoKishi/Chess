@@ -1,4 +1,5 @@
 from game_state import GameState as game
+from game_state import Util
 
 
 
@@ -9,8 +10,8 @@ class Drag:
     @staticmethod
     def loop(root, x, y):
         if Drag.is_dragging:
-            root.board_ui[x][y].move(*Util.get_mouse_pos(root))
-            Drag.hover_highlight(root, *Util.get_mouse_pos(root, on_grid=True, invert=True))
+            root.board_ui[x][y].move(*Mouse.get_mouse_pos(root))
+            Drag.hover_highlight(root, *Mouse.get_mouse_pos(root, on_grid=True, invert=True))
             root.after(1000//60, Drag.loop, *(root, x, y))
 
     @staticmethod
@@ -47,11 +48,10 @@ class Draw:
 
     @staticmethod
     def draw_pieces(root):
-        for x in range(8):
-            for y in range(8):
-                piece = game.get(x,y)
-                root.board_ui[x][y].set_piece('' if piece is None else piece.image)
-                root.board_ui[x][y].place(x*60, y*60)
+        for x, y in Util.range2d():
+            piece = game.get(x,y)
+            root.board_ui[x][y].set_piece('' if piece is None else piece.image)
+            root.board_ui[x][y].place(x*60, y*60)
 
     @staticmethod
     def draw_indicator(root):
@@ -104,7 +104,7 @@ class Draw:
         Draw.indicators = list()
 
 
-class Util:
+class Mouse:
 
     @staticmethod
     def get_mouse_pos(root, on_grid=False, invert=False) -> tuple:

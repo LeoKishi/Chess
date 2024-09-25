@@ -56,12 +56,12 @@ class ChessBoard(tk.Tk):
         if game.selected is None:
             return
         
-        if game.selected.pos == Util.get_mouse_pos(self, on_grid=True, invert=True):
+        if game.selected.pos == Mouse.get_mouse_pos(self, on_grid=True, invert=True):
             Drag.stop_drag()
             Draw.draw_pieces(self)
-            game.select(*Util.get_mouse_pos(self, on_grid=True, invert=True))
+            game.select(*Mouse.get_mouse_pos(self, on_grid=True, invert=True))
         else:
-            self.click_handler(*Util.get_mouse_pos(self, invert=True))
+            self.click_handler(*Mouse.get_mouse_pos(self, invert=True))
 
 
 
