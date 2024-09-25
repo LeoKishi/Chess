@@ -1,5 +1,5 @@
 from tkinter import PhotoImage
-from game_state import Piece
+from game_state import GameState as gs
 from sprite_loader import SpriteSheet
 
 
@@ -8,6 +8,25 @@ from sprite_loader import SpriteSheet
 # make the pawn sprite smaller
 # add white outlines to the black pieces
 # add a faint thin outline of the opposite color in every piece for better visibility
+
+
+
+class Piece:
+    def __init__(self, name:str, color:str, position:tuple):
+        self.name = name
+        self.color = color
+        self.pos = position
+        self.image = None
+
+    
+    def get_info(self) -> str:
+        return f'{self.color}\n{self.name}\n{self.pos}'
+    
+
+    def __repr__(self):
+        return f'{self.color}{self.name}'
+
+
 
 
 class Pawn(Piece):
@@ -25,7 +44,7 @@ class Pawn(Piece):
         moves = list()
 
         for i in range(1, 3 if self.first_move else 2):
-            if self.is_blocked(x+i*-1, y):
+            if gs.is_blocked(x+i*-1, y):
                 break
             else:
                 moves.append((x+i*-1, y))
@@ -38,7 +57,7 @@ class Pawn(Piece):
         captures = list()
 
         for i in range(-1, 2, 2):
-            if self.is_enemy(self, [(x-1, y+i)]):
+            if gs.is_enemy(self, [(x-1, y+i)]):
                 captures.append((x-1, y+i))
 
         return captures
@@ -53,24 +72,24 @@ class Rook(Piece):
         w_rook = loader.get_sprite((60,60), (1,2))
         b_rook = loader.get_sprite((60,60), (0,2))
         self.image = w_rook if color == 'White' else b_rook
+        self.directions = ((-1,0), (1,0), (0,-1), (0,1))
 
 
     def can_move(self) -> list:
         moves = list()
-        directions = ((-1,0), (1,0), (0,-1), (0,1))
-
-        for i in directions:
-            moves += self.find_path(i)
-
+        for i in self.directions:
+            moves += gs.find_path(i)
         return moves
 
 
     def can_capture(self) -> list:
         captures = list()
-        directions = ((-1,0), (1,0), (0,-1), (0,1))
+        for i in self.directions:
+            captures += gs.find_captures(i)
 
-        for i in directions:
-            captures += self.find_captures(i)
+        for i in captures:
+            if gs.get(*i).name == 'King':
+                print(self.color + self.name + ' check')
 
         return captures
 
@@ -86,25 +105,22 @@ class Knight(Piece):
         self.image = w_knight if color == 'White' else b_knight
 
 
-    def can_move(self) -> list:
+    def jumps(self) -> tuple:
         x, y = self.pos
-        moves = list()
-        jumps = ((x-1,y-2), (x+1,y-2), (x+2,y-1), (x+2,y+1), 
-                 (x+1,y+2), (x-1,y+2), (x-2,y-1), (x-2,y+1))
-        
-        for i in jumps:
-            if self.is_inside(*i) and not self.is_blocked(*i):
-                moves.append(i)
+        return ((x-1,y-2), (x+1,y-2), (x+2,y-1), (x+2,y+1),
+                (x+1,y+2), (x-1,y+2), (x-2,y-1), (x-2,y+1))
 
+
+    def can_move(self) -> list:
+        moves = list()
+        for i in self.jumps():
+            if gs.is_empty(i):
+                moves.append(i)
         return moves
 
 
     def can_capture(self) -> list:
-        x, y = self.pos
-        jumps = ((x-1,y-2), (x+1,y-2), (x+2,y-1), (x+2,y+1), 
-                 (x+1,y+2), (x-1,y+2), (x-2,y-1), (x-2,y+1))
-
-        return self.is_enemy(self, jumps)
+        return gs.is_enemy(self, self.jumps())
 
 
 
@@ -115,25 +131,20 @@ class Bishop(Piece):
         w_bishop = loader.get_sprite((60,60), (1,4))
         b_bishop = loader.get_sprite((60,60), (0,4))
         self.image = w_bishop if color == 'White' else b_bishop
+        self.directions = ((-1,-1), (1,-1), (1,+1), (-1,+1))
 
 
     def can_move(self) -> list:
         moves = list()
-        directions = ((-1,-1), (1,-1), (1,+1), (-1,+1))
-
-        for i in directions:
-            moves += self.find_path(i)
-
+        for i in self.directions:
+            moves += gs.find_path(i)
         return moves
 
 
     def can_capture(self) -> list:
         captures = list()
-        directions = ((-1,-1), (1,-1), (1,+1), (-1,+1))
-
-        for i in directions:
-            captures += self.find_captures(i)
-
+        for i in self.directions:
+            captures += gs.find_captures(i)
         return captures
 
 
@@ -146,27 +157,21 @@ class Queen(Piece):
         w_queen = loader.get_sprite((60,60), (1,0))
         b_queen = loader.get_sprite((60,60), (0,0))
         self.image = w_queen if color == 'White' else b_queen
+        self.directions = ((-1,-1), (1,-1), (1,+1), (-1,+1),
+                           (-1,0), (1,0), (0,-1), (0,1))
 
 
     def can_move(self) -> list:
         moves = list()
-        directions = ((-1,-1), (1,-1), (1,+1), (-1,+1),
-                      (-1,0), (1,0), (0,-1), (0,1))
-
-        for i in directions:
-            moves += self.find_path(i)
-
+        for i in self.directions:
+            moves += gs.find_path(i)
         return moves
 
 
     def can_capture(self) -> list:
         captures = list()
-        directions = ((-1,-1), (1,-1), (1,+1), (-1,+1),
-                      (-1,0), (1,0), (0,-1), (0,1))
-
-        for i in directions:
-            captures += self.find_captures(i)
-
+        for i in self.directions:
+            captures += gs.find_captures(i)
         return captures
 
 
@@ -182,25 +187,18 @@ class King(Piece):
         self.first_move = True
 
 
-    def can_move(self) -> list:
+    def directions(self):
         x, y = self.pos
-        moves = list()
-        directions = ((x-1,y-1), (x+1,y-1), (x+1,y+1), (x-1,y+1),
-                      (x-1,y+0), (x+1,y+0), (x+0,y-1), (x+0,y+1))
-        
-        for i in directions:
-            if self.is_inside(*i) and not self.is_blocked(*i):
-                moves.append(i)
+        return ((x-1,y-1), (x+1,y-1), (x+1,y+1), (x-1,y+1),
+                (x-1,y+0), (x+1,y+0), (x+0,y-1), (x+0,y+1))
 
-        return moves
+
+    def can_move(self) -> list:
+        return [i for i in self.directions() if gs.is_empty(i)]
 
 
     def can_capture(self) -> list:
-        x, y = self.pos
-        directions = ((x-1,y-1), (x+1,y-1), (x+1,y+1), (x-1,y+1),
-                      (x-1,y+0), (x+1,y+0), (x+0,y-1), (x+0,y+1))
-
-        return self.is_enemy(self, directions)
+        return gs.is_enemy(self, self.directions())
 
 
 

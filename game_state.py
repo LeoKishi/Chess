@@ -1,4 +1,4 @@
-from typing import Type
+
 
 
 class GameState:
@@ -79,6 +79,23 @@ class GameState:
                 enemy_pos.append((x,y))
 
         return enemy_pos
+    
+
+    @classmethod
+    def is_empty(cls, pos:list[tuple]) -> list:
+        empty_pos = list()
+
+        if type(pos[0]) != tuple:
+            pos = [pos]
+
+        for x, y in pos:
+            if not cls.is_inside(x, y):
+                continue
+
+            if not cls.is_piece(x, y):
+                empty_pos.append((x,y))
+
+        return empty_pos
 
 
     @classmethod
@@ -132,7 +149,7 @@ class GameState:
 
     @classmethod
     def is_piece(cls, x, y) -> bool:
-        return cls.is_inside(x, y) and cls.board[x][y] is not None
+        return cls.board[x][y] is not None
 
 
     @classmethod
@@ -161,32 +178,16 @@ class GameState:
 
 
     @classmethod
-    def get(cls, x, y) -> Type['Piece'] | None:
+    def get(cls, x, y) -> object | None:
         return cls.board[x][y]
 
 
 
 
-class Piece(GameState):
-    def __init__(self, name:str, color:str, position:tuple):
-        self.name = name
-        self.color = color
-        self.pos = position
-        self.image = None
 
-    
-    def get_info(self) -> str:
-        return f'{self.color}\n{self.name}\n{self.pos}'
-    
-
-    def __repr__(self):
-        return f'{self.color}{self.name}'
 
 
 
 
 if __name__ == '__main__':
-    a = GameState.is_inside(7,2)
-    b = GameState.is_blocked(7,2)
-    c = GameState.is_inside(188764, 7)
-    print(c)
+    pass
