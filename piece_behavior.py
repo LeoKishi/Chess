@@ -1,5 +1,6 @@
 from tkinter import PhotoImage
-from game_state import GameState as gs
+from game_state import Find
+from game_state import Info
 from sprite_loader import SpriteSheet
 
 
@@ -44,7 +45,7 @@ class Pawn(Piece):
         moves = list()
 
         for i in range(1, 3 if self.first_move else 2):
-            if gs.is_blocked(x+i*-1, y):
+            if Info.is_blocked(x+i*-1, y):
                 break
             else:
                 moves.append((x+i*-1, y))
@@ -57,7 +58,7 @@ class Pawn(Piece):
         captures = list()
 
         for i in range(-1, 2, 2):
-            if gs.is_enemy(self, [(x-1, y+i)]):
+            if Info.is_enemy(self, [(x-1, y+i)]):
                 captures.append((x-1, y+i))
 
         return captures
@@ -78,14 +79,14 @@ class Rook(Piece):
     def can_move(self) -> list:
         moves = list()
         for i in self.directions:
-            moves += gs.find_path(self, i)
+            moves += Find.find_path(self, i)
         return moves
 
 
     def can_capture(self) -> list:
         captures = list()
         for i in self.directions:
-            captures += gs.find_captures(self, i)
+            captures += Find.find_captures(self, i)
 
         return captures
 
@@ -110,13 +111,13 @@ class Knight(Piece):
     def can_move(self) -> list:
         moves = list()
         for i in self.jumps():
-            if gs.is_empty(i):
+            if Info.is_empty(i):
                 moves.append(i)
         return moves
 
 
     def can_capture(self) -> list:
-        return gs.is_enemy(self, self.jumps())
+        return Info.is_enemy(self, self.jumps())
 
 
 
@@ -133,14 +134,14 @@ class Bishop(Piece):
     def can_move(self) -> list:
         moves = list()
         for i in self.directions:
-            moves += gs.find_path(self, i)
+            moves += Find.find_path(self, i)
         return moves
 
 
     def can_capture(self) -> list:
         captures = list()
         for i in self.directions:
-            captures += gs.find_captures(self, i)
+            captures += Find.find_captures(self, i)
         return captures
 
 
@@ -160,14 +161,14 @@ class Queen(Piece):
     def can_move(self) -> list:
         moves = list()
         for i in self.directions:
-            moves += gs.find_path(self, i)
+            moves += Find.find_path(self, i)
         return moves
 
 
     def can_capture(self) -> list:
         captures = list()
         for i in self.directions:
-            captures += gs.find_captures(self, i)
+            captures += Find.find_captures(self, i)
         return captures
 
 
@@ -190,11 +191,11 @@ class King(Piece):
 
 
     def can_move(self) -> list:
-        return [i for i in self.directions() if gs.is_empty(i)]
+        return [i for i in self.directions() if Info.is_empty(i)]
 
 
     def can_capture(self) -> list:
-        return gs.is_enemy(self, self.directions())
+        return Info.is_enemy(self, self.directions())
 
 
 

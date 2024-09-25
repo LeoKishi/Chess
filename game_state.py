@@ -34,14 +34,9 @@ class GameState:
 
     @classmethod
     def select(cls, x, y):
-        if cls.is_piece(x, y):
-            cls.selected = cls.board[x][y]
-            cls.find_possible_actions(x, y)
-
-
-    @classmethod
-    def can_select(cls, x, y) -> bool:
-        return cls.selected is None and cls.is_piece(x, y)
+        if Info.is_piece(x, y):
+            cls.selected = Info.get(x,y)
+            Find.find_possible_actions(x, y)
 
 
     @classmethod
@@ -55,31 +50,87 @@ class GameState:
         cls.last_move = ((old_x, old_y), (new_x, new_y))
         cls.first_move_status(*new_pos)
 
-        cls.find_checks(cls.get(*new_pos))
+        Find.find_checks(Info.get(*new_pos))
 
 
-    @classmethod
-    def first_move_status(cls, x, y):
-        piece = cls.board[x][y]
+    @staticmethod
+    def first_move_status(x, y):
+        piece = Info.get(x,y)
         if piece.name in ('Pawn', 'King'):
             piece.first_move = False
 
 
-    @classmethod
-    def find_checks(cls, piece):
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+class Find:
+
+    @staticmethod
+    def find_captures(piece, direction) -> list:
+        x, y = piece.pos
+        mod_x, mod_y = direction
+        captures = list()
+        while True:
+            x += mod_x
+            y += mod_y
+            if not Info.is_inside(x,y):
+                break
+            if not Info.is_piece(x,y):
+                continue
+            if Info.is_enemy(GameState.selected, (x,y)):
+                captures.append((x,y))
+            break   
+        return captures
+    
+    @staticmethod
+    def find_path(piece, direction) -> list:
+        x, y = piece.pos
+        mod_x, mod_y = direction
+        path = list()
+        while True:
+            x += mod_x
+            y += mod_y
+            if Info.is_blocked(x, y) or not Info.is_inside(x, y):
+                break
+            else:
+                path.append((x,y))
+        return path
+
+    @staticmethod
+    def find_possible_actions(x, y):
+        GameState.moves = Info.get(x,y).can_move()
+        GameState.captures = Info.get(x,y).can_capture()
+
+    @staticmethod
+    def find_checks(piece):
         moves = list()
 
         for x, y in Util.range2d():
-            if not cls.is_piece(x,y):
+            if not Info.is_piece(x,y):
                 continue
 
-            elif cls.get(x,y).color == piece.color:
-                moves += cls.get(x,y).can_capture()
+            elif Info.color(x,y) == piece.color:
+                moves += Info.get(x,y).can_capture()
 
         for i in list(set(moves)):
-            if cls.get(*i).name == 'King':
+            if Info.get(*i).name == 'King':
                 print('check')
 
+
+class Info:
 
     @classmethod
     def is_enemy(cls, piece, pos:list[tuple]) -> list:
@@ -115,89 +166,47 @@ class GameState:
 
         return empty_pos
 
+    @staticmethod
+    def possible_moves() -> list:
+        possible_moves = list()
+
+        if GameState.moves is not None:
+            possible_moves += GameState.moves
+
+        if GameState.captures is not None:
+            possible_moves += GameState.captures
+
+        return possible_moves     
+
+    @staticmethod
+    def is_inside(x, y) -> bool:
+        return (0 <= x < 8) and (0 <= y < 8)
+
+    @staticmethod
+    def is_piece(x, y) -> bool:
+        return GameState.board[x][y] is not None
+    
+    @staticmethod
+    def get(x, y) -> object | None:
+        return GameState.board[x][y]
+
+    @classmethod
+    def color(cls, x, y) -> str:
+        if cls.is_piece(x, y):
+            return GameState.board[x][y].color
+
+    @classmethod
+    def can_select(cls, x, y) -> bool:
+        return GameState.selected is None and cls.is_piece(x, y)
 
     @classmethod
     def is_blocked(cls, x, y) -> bool:
         return cls.is_inside(x, y) and cls.is_piece(x, y)
 
-
-    @classmethod
-    def find_possible_actions(cls, x, y):
-        cls.moves = cls.get(x,y).can_move()
-        cls.captures = cls.get(x,y).can_capture()
-
-
-    @classmethod
-    def find_path(cls, piece, direction):
-        x, y = piece.pos
-        mod_x, mod_y = direction
-        path = list()
-        while True:
-            x += mod_x
-            y += mod_y
-            if cls.is_blocked(x, y) or not cls.is_inside(x, y):
-                break
-            else:
-                path.append((x,y))
-        return path
-
-
-    @classmethod
-    def find_captures(cls, piece, direction):
-        x, y = piece.pos
-        mod_x, mod_y = direction
-        captures = list()
-        while True:
-            x += mod_x
-            y += mod_y
-            if not cls.is_inside(x,y):
-                break
-            if not cls.is_piece(x,y):
-                continue
-            if cls.is_enemy(cls.selected, (x,y)):
-                captures.append((x,y))
-            break   
-        return captures
-
-
-    @classmethod
-    def is_inside(cls, x, y) -> bool:
-        return (0 <= x < 8) and (0 <= y < 8)
-
-
-    @classmethod
-    def is_piece(cls, x, y) -> bool:
-        return cls.board[x][y] is not None
-
-
     @classmethod
     def is_same_color(cls, x, y) -> bool:
         if cls.is_piece(x, y):
-            return cls.color(x,y) == cls.selected.color
-
-
-    @classmethod
-    def can_move(cls) -> list:
-        possible_moves = list()
-
-        if cls.moves is not None:
-            possible_moves += cls.moves
-
-        if cls.captures is not None:
-            possible_moves += cls.captures
-
-        return possible_moves
-
-
-    @classmethod
-    def color(cls, x, y) -> str:
-        if cls.is_piece(x, y):
-            return cls.board[x][y].color
-
-
-    @classmethod
-    def get(cls, x, y) -> object | None:
-        return cls.board[x][y]
+            return cls.color(x,y) == GameState.selected.color
 
 
 
@@ -209,10 +218,6 @@ class Util:
         for x in range(8):
             for y in range(8):
                 yield (x,y)
-
-
-
-
 
 
 

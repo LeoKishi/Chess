@@ -1,4 +1,5 @@
 from game_state import GameState as game
+from game_state import Info
 from game_state import Util
 
 
@@ -49,7 +50,7 @@ class Draw:
     @staticmethod
     def draw_pieces(root):
         for x, y in Util.range2d():
-            piece = game.get(x,y)
+            piece = Info.get(x,y)
             root.board_ui[x][y].set_piece('' if piece is None else piece.image)
             root.board_ui[x][y].place(x*60, y*60)
 
@@ -84,7 +85,7 @@ class Draw:
         new_x, new_y = new_pos
         old_x, old_y = old_pos
     
-        root.board_ui[new_x][new_y].set_piece(game.get(*new_pos).image)
+        root.board_ui[new_x][new_y].set_piece(Info.get(*new_pos).image)
         root.board_ui[old_x][old_y].set_piece('')
 
     @staticmethod

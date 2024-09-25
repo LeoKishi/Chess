@@ -1,5 +1,6 @@
 import tkinter as tk
 from game_state import GameState as game
+from game_state import Info
 from board_loader import BoardLoader
 from gui_behavior import *
 
@@ -26,22 +27,22 @@ class ChessBoard(tk.Tk):
     def click_handler(self, raw_x, raw_y):
         x, y = raw_x//60, raw_y//60
 
-        if game.can_select(x, y) and game.color(x,y) == self.player:
+        if Info.can_select(x, y) and Info.color(x,y) == self.player:
             Drag.start_drag(self, x, y)
 
-        elif game.selected == game.get(x,y):
+        elif game.selected == Info.get(x,y):
             game.clear_selected()
 
-        elif game.selected and game.is_same_color(x, y):
+        elif game.selected and Info.is_same_color(x, y):
             if not Drag.stop_drag():
                 Drag.start_drag(self, x, y)
 
-        elif (x,y) in game.can_move():
+        elif (x,y) in Info.possible_moves():
             if game.process_action(x, y):
                 Draw.draw_last_move(self)
                 Drag.stop_drag()
 
-        elif game.selected and not game.is_same_color(x, y):
+        elif game.selected and not Info.is_same_color(x, y):
             if not Drag.stop_drag():
                 game.clear_selected()
                 
