@@ -55,12 +55,32 @@ class GameState:
         cls.last_move = ((old_x, old_y), (new_x, new_y))
         cls.first_move_status(*new_pos)
 
+        cls.find_checks(cls.get(*new_pos))
+
 
     @classmethod
     def first_move_status(cls, x, y):
         piece = cls.board[x][y]
         if piece.name in ('Pawn', 'King'):
             piece.first_move = False
+
+
+    @classmethod
+    def find_checks(cls, piece):
+        moves = list()
+
+        for x in range(8):
+            for y in range(8):
+                if not cls.is_piece(x,y):
+                    continue
+
+                elif not cls.get(x,y).color == piece.color:
+                    continue
+
+                if cls.get(x,y).name == 'Rook':
+                    a = cls.get(x,y).can_capture()
+                    print(a)
+
 
 
     @classmethod
@@ -110,8 +130,8 @@ class GameState:
 
 
     @classmethod
-    def find_path(cls, direction):
-        x, y = cls.selected.pos
+    def find_path(cls, piece, direction):
+        x, y = piece.pos
         mod_x, mod_y = direction
         path = list()
         while True:
@@ -125,8 +145,8 @@ class GameState:
 
 
     @classmethod
-    def find_captures(cls, direction):
-        x, y = cls.selected.pos
+    def find_captures(cls, piece, direction):
+        x, y = piece.pos
         mod_x, mod_y = direction
         captures = list()
         while True:
@@ -138,7 +158,7 @@ class GameState:
                 continue
             if cls.is_enemy(cls.selected, (x,y)):
                 captures.append((x,y))
-            break    
+            break   
         return captures
 
 

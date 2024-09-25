@@ -78,18 +78,14 @@ class Rook(Piece):
     def can_move(self) -> list:
         moves = list()
         for i in self.directions:
-            moves += gs.find_path(i)
+            moves += gs.find_path(self, i)
         return moves
 
 
     def can_capture(self) -> list:
         captures = list()
         for i in self.directions:
-            captures += gs.find_captures(i)
-
-        for i in captures:
-            if gs.get(*i).name == 'King':
-                print(self.color + self.name + ' check')
+            captures += gs.find_captures(self, i)
 
         return captures
 
@@ -137,14 +133,14 @@ class Bishop(Piece):
     def can_move(self) -> list:
         moves = list()
         for i in self.directions:
-            moves += gs.find_path(i)
+            moves += gs.find_path(self, i)
         return moves
 
 
     def can_capture(self) -> list:
         captures = list()
         for i in self.directions:
-            captures += gs.find_captures(i)
+            captures += gs.find_captures(self, i)
         return captures
 
 
@@ -164,14 +160,14 @@ class Queen(Piece):
     def can_move(self) -> list:
         moves = list()
         for i in self.directions:
-            moves += gs.find_path(i)
+            moves += gs.find_path(self, i)
         return moves
 
 
     def can_capture(self) -> list:
         captures = list()
         for i in self.directions:
-            captures += gs.find_captures(i)
+            captures += gs.find_captures(self, i)
         return captures
 
 
