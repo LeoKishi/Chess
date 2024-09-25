@@ -25,20 +25,17 @@ class GameState:
         cls.clear_selected()
         return True
 
-
     @classmethod
     def clear_selected(cls):
         cls.selected = None
         cls.moves = None
         cls.captures = None
 
-
     @classmethod
     def select(cls, x, y):
         if Info.is_piece(x, y):
             cls.selected = Info.get(x,y)
             Find.find_possible_actions(x, y)
-
 
     @classmethod
     def register(cls, piece, new_pos:list|tuple):
@@ -52,26 +49,11 @@ class GameState:
         cls.first_move_status(*new_pos)
         Find.find_checks(Info.get(*new_pos))
 
-
     @staticmethod
     def first_move_status(x, y):
         piece = Info.get(x,y)
         if piece.name in ('Pawn', 'King'):
             piece.first_move = False
-
-
-
-
-
-    
-
-
-
-
-
-
-
-
 
 
 
@@ -96,11 +78,10 @@ class Find:
             y += mod_y
             if not Info.is_inside(x, y):
                 break
-            elif Info.is_blocked(x, y):
+            elif not Info.is_empty(x, y):
                 attacks.append((x,y))
                 break
-            else:
-                attacks.append((x,y))
+            attacks.append((x,y))
         return attacks
 
     @staticmethod
@@ -111,13 +92,11 @@ class Find:
         while True:
             x += mod_x
             y += mod_y
-            if not Info.is_inside(x,y):
-                break
-            if not Info.is_piece(x,y):
-                continue
             if Info.is_enemy(GameState.selected, (x,y)):
                 captures.append((x,y))
-            break   
+            elif Info.is_inside(x,y):
+                continue
+            break
         return captures
     
     @staticmethod
@@ -128,10 +107,9 @@ class Find:
         while True:
             x += mod_x
             y += mod_y
-            if Info.is_blocked(x, y) or not Info.is_inside(x, y):
+            if not Info.is_empty(x, y):
                 break
-            else:
-                path.append((x,y))
+            path.append((x,y))
         return path
 
     @staticmethod
@@ -153,30 +131,15 @@ class Info:
             pos = [pos]
         
         for x, y in pos:
-            if not cls.is_inside(x, y):
-                continue
-
             if cls.is_piece(x, y) and cls.color(x,y) == enemy_color:
                 enemy_pos.append((x,y))
 
         return enemy_pos
     
-
     @classmethod
-    def is_empty(cls, pos:list[tuple]) -> list:
-        empty_pos = list()
-
-        if type(pos[0]) != tuple:
-            pos = [pos]
-
-        for x, y in pos:
-            if not cls.is_inside(x, y):
-                continue
-
-            if not cls.is_piece(x, y):
-                empty_pos.append((x,y))
-
-        return empty_pos
+    def is_empty(cls, x, y) -> list:
+        if cls.is_inside(x, y) and Info.get(x,y) is None:
+            return True
 
     @staticmethod
     def possible_moves() -> list:
@@ -195,15 +158,11 @@ class Info:
         return (0 <= x < 8) and (0 <= y < 8)
 
     @staticmethod
-    def is_piece(x, y) -> bool:
-        return GameState.board[x][y] is not None
-    
-    @staticmethod
     def get(x, y) -> object | None:
         return GameState.board[x][y]
 
     @classmethod
-    def color(cls, x, y) -> str:
+    def color(cls, x, y) -> str | None:
         if cls.is_piece(x, y):
             return GameState.board[x][y].color
 
@@ -212,8 +171,16 @@ class Info:
         return GameState.selected is None and cls.is_piece(x, y)
 
     @classmethod
+    def is_piece(cls, x, y) -> bool:
+        if not cls.is_inside(x, y):
+            return False
+        return GameState.board[x][y] is not None
+    
+    @classmethod
     def is_blocked(cls, x, y) -> bool:
-        return cls.is_inside(x, y) and cls.is_piece(x, y)
+        if not cls.is_inside(x, y):
+            return True
+        return cls.is_piece(x, y)
 
     @classmethod
     def is_same_color(cls, x, y) -> bool:

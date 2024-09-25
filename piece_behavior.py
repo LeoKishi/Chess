@@ -44,10 +44,9 @@ class Pawn(Piece):
         moves = list()
 
         for i in range(1, 3 if self.first_move else 2):
-            if Info.is_blocked(x+i*-1, y):
-                break
-            else:
+            if Info.is_empty(x+i*-1, y):
                 moves.append((x+i*-1, y))
+                
 
         return moves
 
@@ -112,11 +111,7 @@ class Knight(Piece):
 
 
     def can_move(self) -> list:
-        moves = list()
-        for i in self.jumps():
-            if Info.is_empty(i):
-                moves.append(i)
-        return moves
+        return [i for i in self.jumps() if Info.is_empty(*i)]
 
 
     def can_capture(self) -> list:
@@ -201,23 +196,21 @@ class King(Piece):
         self.image = w_king if color == 'White' else b_king
         self.first_move = True
 
-
     def directions(self):
         x, y = self.pos
         return ((x-1,y-1), (x+1,y-1), (x+1,y+1), (x-1,y+1),
                 (x-1,y+0), (x+1,y+0), (x+0,y-1), (x+0,y+1))
 
-
     def can_move(self) -> list:
-        return [i for i in self.directions() if Info.is_empty(i)]
-
+        return [i for i in self.directions() if Info.is_empty(*i)]
 
     def can_capture(self) -> list:
         return Info.is_enemy(self, self.directions())
 
-
     def is_attacking(self) -> list:
         return [i for i in self.directions() if Info.is_inside(*i)]
+
+
 
 
 if __name__ == '__main__':
