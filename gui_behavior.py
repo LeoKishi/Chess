@@ -46,6 +46,7 @@ class Drag:
 class Draw:
     highlights = list()
     indicators = list()
+    attacks = list()
 
     @staticmethod
     def draw_pieces(root):
@@ -78,6 +79,18 @@ class Draw:
             for x,y in game.captures:
                 root.board_ui[x][y].set_highlight(root.circle_img)
                 Draw.highlights.append((x,y))
+
+    # DEVTOOL
+    @staticmethod
+    def draw_attacks(root):
+        for x,y in Draw.attacks:
+            root.board_ui[x][y].set_attack('')
+
+        if game.attacks:
+            for x,y in game.attacks:
+                root.board_ui[x][y].set_attack(root.attack_img)
+                root.board_ui[x][y].raise_piece()
+                Draw.attacks.append((x,y))
 
     @staticmethod
     def draw_last_move(root):

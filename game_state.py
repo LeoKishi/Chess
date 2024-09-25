@@ -6,6 +6,7 @@ class GameState:
     selected = None
     moves = None
     captures = None
+    attacks = None
     last_move = None
 
 
@@ -49,7 +50,6 @@ class GameState:
 
         cls.last_move = ((old_x, old_y), (new_x, new_y))
         cls.first_move_status(*new_pos)
-
         Find.find_checks(Info.get(*new_pos))
 
 
@@ -77,6 +77,31 @@ class GameState:
 
 
 class Find:
+
+    @staticmethod
+    def find_checks(piece):
+        attacks = list()
+        for x,y in Util.range2d():
+            if Info.is_piece(x,y) and Info.color(x,y) == piece.color:
+                attacks += Info.get(x,y).is_attacking()
+        GameState.attacks = list(set(attacks))
+
+    @staticmethod
+    def find_attacks(piece, direction) -> list:
+        x, y = piece.pos
+        mod_x, mod_y = direction
+        attacks = list()
+        while True:
+            x += mod_x
+            y += mod_y
+            if not Info.is_inside(x, y):
+                break
+            elif Info.is_blocked(x, y):
+                attacks.append((x,y))
+                break
+            else:
+                attacks.append((x,y))
+        return attacks
 
     @staticmethod
     def find_captures(piece, direction) -> list:
@@ -114,20 +139,7 @@ class Find:
         GameState.moves = Info.get(x,y).can_move()
         GameState.captures = Info.get(x,y).can_capture()
 
-    @staticmethod
-    def find_checks(piece):
-        moves = list()
 
-        for x, y in Util.range2d():
-            if not Info.is_piece(x,y):
-                continue
-
-            elif Info.color(x,y) == piece.color:
-                moves += Info.get(x,y).can_capture()
-
-        for i in list(set(moves)):
-            if Info.get(*i).name == 'King':
-                print('check')
 
 
 class Info:

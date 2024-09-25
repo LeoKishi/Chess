@@ -24,6 +24,7 @@ class BoardLoader:
         root.dot_img = tk.PhotoImage(file='assets/dot.png')
         root.indicator_img = tk.PhotoImage(file='assets/indicator.png')
         root.hover_img = tk.PhotoImage(file='assets/hover.png')
+        root.attack_img = tk.PhotoImage(file='assets/attack.png')
 
     @staticmethod
     def create_grid(root):
@@ -92,30 +93,30 @@ class Square:
         self.hover = new_image()
         self.piece = new_image()
         self.indicator = new_image()
+        # DEVTOOL
+        self.attack = new_image()
 
         self.elements = [self.bg,
                          self.highlight,
                          self.indicator,
                          self.hover,
-                         self.piece]
+                         self.piece,
+                         # DEVTOOL
+                         self.attack]
         
 
     def move(self, mouse_x, mouse_y):
         self.canvas.moveto(self.piece, mouse_x-30, mouse_y-30)
-
         
     def raise_piece(self):
         self.canvas.tag_raise(self.piece)
 
-
     def place(self, x, y):
         for elem in self.elements:
             self.canvas.moveto(elem, y, x)
-
     
     def set_bg(self, img):
         self.canvas.itemconfig(self.bg, image=img)
-
 
     def set_highlight(self, img):
         self.canvas.itemconfig(self.highlight, image=img)
@@ -124,10 +125,12 @@ class Square:
     def set_indicator(self, img):
         self.canvas.itemconfig(self.indicator, image=img)
 
-
     def set_hover(self, img):
         self.canvas.itemconfig(self.hover, image=img)
 
-
     def set_piece(self, img):
         self.canvas.itemconfig(self.piece, image=img)
+
+    # DEVTOOL
+    def set_attack(self, img):
+        self.canvas.itemconfig(self.attack, image=img)

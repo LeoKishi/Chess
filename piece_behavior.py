@@ -11,7 +11,6 @@ from sprite_loader import SpriteSheet
 # add a faint thin outline of the opposite color in every piece for better visibility
 
 
-
 class Piece:
     def __init__(self, name:str, color:str, position:tuple):
         self.name = name
@@ -25,7 +24,7 @@ class Piece:
     
 
     def __repr__(self):
-        return f'{self.color}{self.name}'
+        return f'{self.color}{self.name} {self.pos}'
 
 
 
@@ -55,13 +54,12 @@ class Pawn(Piece):
 
     def can_capture(self) -> list:
         x, y = self.pos
-        captures = list()
+        return [(x-1,y+i) for i in range(-1,2,2) if Info.is_enemy(self, (x-1,y+i))]
 
-        for i in range(-1, 2, 2):
-            if Info.is_enemy(self, [(x-1, y+i)]):
-                captures.append((x-1, y+i))
 
-        return captures
+    def is_attacking(self) -> list:
+        x, y = self.pos
+        return [(x-1,y+i) for i in range(-1,2,2) if Info.is_inside(x-1,y+i)]
 
 
 
@@ -87,9 +85,14 @@ class Rook(Piece):
         captures = list()
         for i in self.directions:
             captures += Find.find_captures(self, i)
-
         return captures
 
+
+    def is_attacking(self) -> list:
+        attacks = list()
+        for i in self.directions:
+            attacks += Find.find_attacks(self, i)
+        return attacks
 
 
 
@@ -120,6 +123,11 @@ class Knight(Piece):
         return Info.is_enemy(self, self.jumps())
 
 
+    def is_attacking(self) -> list:
+        return [i for i in self.jumps() if Info.is_inside(*i)]
+
+
+
 
 class Bishop(Piece):
     def __init__(self, color:str, position:tuple):
@@ -145,6 +153,11 @@ class Bishop(Piece):
         return captures
 
 
+    def is_attacking(self) -> list:
+        attacks = list()
+        for i in self.directions:
+            attacks += Find.find_attacks(self, i)
+        return attacks
 
 
 class Queen(Piece):
@@ -172,7 +185,12 @@ class Queen(Piece):
         return captures
 
 
-
+    def is_attacking(self) -> list:
+        attacks = list()
+        for i in self.directions:
+            attacks += Find.find_attacks(self, i)
+        return attacks
+    
 
 class King(Piece):
     def __init__(self, color:str, position:tuple):
@@ -198,6 +216,8 @@ class King(Piece):
         return Info.is_enemy(self, self.directions())
 
 
+    def is_attacking(self) -> list:
+        return [i for i in self.directions() if Info.is_inside(*i)]
 
 
 if __name__ == '__main__':
