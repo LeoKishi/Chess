@@ -41,24 +41,21 @@ class Pawn(Piece):
 
     def can_move(self) -> list:
         x, y = self.pos
-        moves = list()
-
-        for i in range(1, 3 if self.first_move else 2):
-            if Info.is_empty(x+i*-1, y):
-                moves.append((x+i*-1, y))
-                
-
-        return moves
+        mod = -1 if self.color == 'White' else 1
+        stop = 3 if self.first_move else 2
+        return [(x+i*mod, y) for i in range(1, stop) if Info.is_empty(x+i*mod, y)]
 
 
     def can_capture(self) -> list:
         x, y = self.pos
-        return [(x-1,y+i) for i in range(-1,2,2) if Info.is_enemy(self, (x-1,y+i))]
+        mod = -1 if self.color == 'White' else 1
+        return [(x+mod,y+i) for i in range(-1,2,2) if Info.is_enemy(self, (x+mod,y+i))]
 
 
     def is_attacking(self) -> list:
         x, y = self.pos
-        return [(x-1,y+i) for i in range(-1,2,2) if Info.is_inside(x-1,y+i)]
+        mod = -1 if self.color == 'White' else 1
+        return [(x+mod,y+i) for i in range(-1,2,2) if Info.is_inside(x+mod,y+i)]
 
 
 

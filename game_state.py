@@ -191,12 +191,13 @@ class Info:
 
 
 class Util:
-
+    
     @staticmethod
     def range2d():
         for x in range(8):
             for y in range(8):
                 yield (x,y)
+
 
 
 
