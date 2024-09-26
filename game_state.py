@@ -1,4 +1,12 @@
 
+# TODO:
+# stop the king from moving to an attacked square
+# force the player to move the king or block if checked
+# check mate
+# stop a pinned piece from moving if the king is behind it
+# castling
+# don't allow castling if a square in the path is being attacked
+# en passant
 
 
 class GameState:
@@ -65,12 +73,19 @@ class GameState:
 class Find:
 
     @staticmethod
-    def find_checks(piece):
+    def find_checks(piece) -> list:
         attacks = list()
+        attackers = list()
         for x,y in Util.range2d():
-            if Info.is_piece(x,y) and Info.color(x,y) == piece.color:
-                attacks += Info.get(x,y).is_attacking()
+            if not (Info.is_piece(x,y) and Info.color(x,y) == piece.color):
+                continue
+            temp = Info.get(x,y).is_attacking()
+            attacks += temp
+            for i in temp:
+                if Info.is_enemy(piece, i) and Info.get(*i).name == 'King':
+                    attackers.append((x,y))
         GameState.attacks = list(set(attacks))
+        return attackers
 
     @staticmethod
     def find_attacks(piece, direction) -> list:
