@@ -1,7 +1,6 @@
 
 # TODO:
 # stop the king from moving to an attacked square
-# force the player to move the king or block if checked
 # check mate
 # stop a pinned piece from moving if the king is behind it
 # castling
@@ -27,18 +26,22 @@ class GameState:
             return False
         
         if not cls.check:
-            cls.register(cls.selected, (x,y))
+            cls.register_move(cls.selected, (x,y))
             cls.register_last_move(cls.selected, (x,y))
-            cls.first_move_status(x,y)
             cls.register_threats(x,y)
+            cls.first_move_status(x,y)
             cls.new_turn()
 
         else:
-            cls.register(cls.selected, (x,y))
+            old_pos = cls.selected.pos
+            cls.register_move(cls.selected, (x,y))
             if cls.try_check(cls.selected):
-                print('check')
+                cls.register_move(cls.selected, old_pos)
             else:
-                print('blocked')
+                cls.register_last_move(cls.selected, (x,y))
+                cls.register_threats(x,y)
+                cls.first_move_status(x,y)
+                cls.new_turn()
             pass
         
         cls.clear_selected()
@@ -70,7 +73,7 @@ class GameState:
             Find.find_possible_actions(x, y)
 
     @classmethod
-    def register(cls, piece, new_pos:list|tuple):
+    def register_move(cls, piece, new_pos:list|tuple):
         old_x, old_y = piece.pos
         new_x, new_y = new_pos
         piece.pos = new_pos
@@ -99,6 +102,7 @@ class GameState:
         attack, attacker = Find.find_checks(Info.get(x,y))
         if attacker:
             GameState.check = True
+            print('check')
         GameState.threats = {'attack':attack, 'attacker':attacker}
 
 
