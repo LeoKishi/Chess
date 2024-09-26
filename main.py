@@ -27,7 +27,7 @@ class ChessBoard(tk.Tk):
     def click_handler(self, raw_x, raw_y):
         x, y = raw_x//60, raw_y//60
 
-        if Info.can_select(x, y):
+        if Info.can_select(x, y) and Info.get(x,y).color == game.turn:
             Drag.start_drag(self, x, y)
 
         elif game.selected == Info.get(x,y):

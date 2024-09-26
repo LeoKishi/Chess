@@ -8,15 +8,16 @@ class GameState:
     captures = None
     attacks = None
     last_move = None
+    turn = 'White'
 
 
     @classmethod
     def process_action(cls, x, y) -> bool:
-        if (x,y) in cls.moves:
+        if (x,y) in cls.moves or (x,y) in cls.captures:
             cls.register(cls.selected, (x,y))
-
-        elif (x,y) in cls.captures:
-            cls.register(cls.selected, (x,y))
+            cls.first_move_status(x,y)
+            Find.find_checks(Info.get(x,y))
+            cls.new_turn()
 
         else:
             cls.clear_selected()
@@ -44,10 +45,7 @@ class GameState:
         piece.pos = new_pos
         cls.board[old_x][old_y] = None
         cls.board[new_x][new_y] = piece
-
         cls.last_move = ((old_x, old_y), (new_x, new_y))
-        cls.first_move_status(*new_pos)
-        Find.find_checks(Info.get(*new_pos))
 
     @staticmethod
     def first_move_status(x, y):
@@ -55,6 +53,12 @@ class GameState:
         if piece.name in ('Pawn', 'King'):
             piece.first_move = False
 
+    @classmethod
+    def new_turn(cls):
+        if cls.turn == 'White':
+            cls.turn = 'Black'
+        else:
+            cls.turn = 'White'
 
 
 

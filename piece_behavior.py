@@ -43,7 +43,7 @@ class Pawn(Piece):
         x, y = self.pos
         mod = -1 if self.color == 'White' else 1
         stop = 3 if self.first_move else 2
-        return [(x+i*mod, y) for i in range(1, stop) if Info.is_empty(x+i*mod, y)]
+        return [(x+i*mod,y) for i in range(1,stop) if Info.is_empty(x+i*mod,y)]
 
 
     def can_capture(self) -> list:
