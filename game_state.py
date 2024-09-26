@@ -5,6 +5,7 @@
 # castling
 # don't allow castling if a square in the path is being attacked
 # en passant
+# play sounds for piece movement, capture, check and checkmate
 
 
 class GameState:
@@ -19,48 +20,22 @@ class GameState:
 
 
     @classmethod
-    def process_action(cls, x, y) -> bool:
-        if not ((x,y) in cls.moves or (x,y) in cls.captures):
+    def process_action(cls, x, y):
+        old_pos = cls.selected.pos
+        cls.register_move(cls.selected, (x,y))
+
+        if cls.is_in_check():
+            cls.register_move(cls.selected, old_pos)
             cls.clear_selected()
-            return False
+            # BLINK KING TO SIGNAL CHECK
+            print('in check')
+            return
         
-        if cls.check:
-            old_pos = cls.selected.pos
-            cls.register_move(cls.selected, (x,y))
-            if cls.try_check():
-                cls.register_move(cls.selected, old_pos)
-                cls.clear_selected()
-                return True
-            else:
-                cls.register_last_move(cls.selected, (x,y))
-                cls.register_threats(x,y)
-                cls.first_move_status(x,y)
-                cls.new_turn()
-
-        else:
-            cls.register_move(cls.selected, (x,y))
-            cls.register_last_move(cls.selected, (x,y))
-            cls.register_threats(x,y)
-            cls.first_move_status(x,y)
-            cls.new_turn()
-
-
-        
+        cls.register_last_move(cls.selected, (x,y))
+        cls.register_threats(x,y)
+        cls.first_move_status(x,y)
+        cls.new_turn()
         cls.clear_selected()
-        return True
-
-    @classmethod
-    def try_check(cls) -> bool:
-        for i in cls.threats['attacker']:
-            for j in tuple(set(Info.get(*i).is_attacking())):
-                if not Info.is_piece(*j):
-                    continue
-                if Info.get(*j).name == 'King' and Info.is_enemy(Info.get(*i), j):
-                    return True
-        return False
-
-
-
 
 
 
@@ -182,6 +157,18 @@ class Find:
 
 
 class Info:
+
+    @classmethod
+    def is_in_check(cls) -> bool:
+        if not GameState.check:
+            return False
+
+        for i in GameState.threats['attacker']:
+            for j in tuple(set(Info.get(*i).is_attacking())):
+                if not Info.is_piece(*j):
+                    continue
+                if cls.get(*j).name == 'King' and cls.is_enemy(cls.get(*i), j):
+                    return True
 
     @classmethod
     def is_enemy(cls, piece, pos:list[tuple]) -> list:

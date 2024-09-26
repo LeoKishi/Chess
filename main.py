@@ -38,11 +38,11 @@ class ChessBoard(tk.Tk):
                 Drag.start_drag(self, x, y)
 
         elif (x,y) in Info.possible_moves():
-            if game.process_action(x, y):
-                Draw.draw_last_move(self)
-                Drag.stop_drag()
-                # DEVTOOL
-                Draw.draw_attacks(self)
+            game.process_action(x, y)
+            Draw.draw_last_move(self)
+            Drag.stop_drag()
+            # DEVTOOL
+            Draw.draw_attacks(self)
 
         elif game.selected and not Info.is_same_color(x, y):
             if not Drag.stop_drag():
