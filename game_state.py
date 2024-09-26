@@ -16,23 +16,46 @@ class GameState:
     captures = None
     attacks = None
     last_move = None
+    check = False
     turn = 'White'
 
 
     @classmethod
     def process_action(cls, x, y) -> bool:
-        if (x,y) in cls.moves or (x,y) in cls.captures:
-            cls.register(cls.selected, (x,y))
-            cls.first_move_status(x,y)
-            Find.find_checks(Info.get(x,y))
-            cls.new_turn()
-
-        else:
+        if not ((x,y) in cls.moves or (x,y) in cls.captures):
             cls.clear_selected()
             return False
         
+        if not cls.check:
+            cls.register(cls.selected, (x,y))
+            cls.register_last_move(cls.selected, (x,y))
+            cls.first_move_status(x,y)
+            cls.register_threats(x,y)
+            cls.new_turn()
+
+        else:
+            cls.register(cls.selected, (x,y))
+            if cls.try_check(cls.selected):
+                print('check')
+            else:
+                print('blocked')
+            pass
+        
         cls.clear_selected()
         return True
+
+    @classmethod
+    def try_check(cls, piece) -> bool:
+        for i in cls.threats['attacker']:
+            for j in tuple(set(Info.get(*i).is_attacking())):
+                if Info.is_piece(*j) and Info.is_enemy(piece, i) and Info.get(*j).name == 'King':
+                    return True
+        return False
+
+
+
+
+
 
     @classmethod
     def clear_selected(cls):
@@ -53,7 +76,10 @@ class GameState:
         piece.pos = new_pos
         cls.board[old_x][old_y] = None
         cls.board[new_x][new_y] = piece
-        cls.last_move = ((old_x, old_y), (new_x, new_y))
+
+    @classmethod
+    def register_last_move(cls, piece, new_pos:list|tuple):
+        cls.last_move = (piece.pos, new_pos)
 
     @staticmethod
     def first_move_status(x, y):
@@ -68,12 +94,21 @@ class GameState:
         else:
             cls.turn = 'White'
 
+    @classmethod
+    def register_threats(cls, x, y):
+        attack, attacker = Find.find_checks(Info.get(x,y))
+        if attacker:
+            GameState.check = True
+        GameState.threats = {'attack':attack, 'attacker':attacker}
+
+
+
 
 
 class Find:
 
     @staticmethod
-    def find_checks(piece) -> list:
+    def find_checks(piece) -> tuple:
         attacks = list()
         attackers = list()
         for x,y in Util.range2d():
@@ -84,8 +119,7 @@ class Find:
             for i in temp:
                 if Info.is_enemy(piece, i) and Info.get(*i).name == 'King':
                     attackers.append((x,y))
-        GameState.attacks = list(set(attacks))
-        return attackers
+        return (list(set(attacks)), attackers)
 
     @staticmethod
     def find_attacks(piece, direction) -> list:
