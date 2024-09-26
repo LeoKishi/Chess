@@ -1,6 +1,5 @@
 
 # TODO:
-# stop the king from moving to an attacked square
 # check mate
 # stop a pinned piece from moving if the king is behind it
 # castling
@@ -13,9 +12,9 @@ class GameState:
     selected = None
     moves = None
     captures = None
-    attacks = None
     last_move = None
     check = False
+    threats = {'attack':list(), 'attacker':list()}
     turn = 'White'
 
 
@@ -25,33 +24,38 @@ class GameState:
             cls.clear_selected()
             return False
         
-        if not cls.check:
+        if cls.check:
+            old_pos = cls.selected.pos
+            cls.register_move(cls.selected, (x,y))
+            if cls.try_check():
+                cls.register_move(cls.selected, old_pos)
+                cls.clear_selected()
+                return True
+            else:
+                cls.register_last_move(cls.selected, (x,y))
+                cls.register_threats(x,y)
+                cls.first_move_status(x,y)
+                cls.new_turn()
+
+        else:
             cls.register_move(cls.selected, (x,y))
             cls.register_last_move(cls.selected, (x,y))
             cls.register_threats(x,y)
             cls.first_move_status(x,y)
             cls.new_turn()
 
-        else:
-            old_pos = cls.selected.pos
-            cls.register_move(cls.selected, (x,y))
-            if cls.try_check(cls.selected):
-                cls.register_move(cls.selected, old_pos)
-            else:
-                cls.register_last_move(cls.selected, (x,y))
-                cls.register_threats(x,y)
-                cls.first_move_status(x,y)
-                cls.new_turn()
-            pass
+
         
         cls.clear_selected()
         return True
 
     @classmethod
-    def try_check(cls, piece) -> bool:
+    def try_check(cls) -> bool:
         for i in cls.threats['attacker']:
             for j in tuple(set(Info.get(*i).is_attacking())):
-                if Info.is_piece(*j) and Info.is_enemy(piece, i) and Info.get(*j).name == 'King':
+                if not Info.is_piece(*j):
+                    continue
+                if Info.get(*j).name == 'King' and Info.is_enemy(Info.get(*i), j):
                     return True
         return False
 
@@ -217,6 +221,14 @@ class Info:
     @staticmethod
     def get(x, y) -> object | None:
         return GameState.board[x][y]
+    
+    @staticmethod
+    def get_attacks() -> list:
+        return GameState.threats['attack']
+
+    @staticmethod
+    def get_attackers() -> list:
+        return GameState.threats['attacker']
 
     @classmethod
     def color(cls, x, y) -> str | None:

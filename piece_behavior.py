@@ -199,10 +199,10 @@ class King(Piece):
                 (x-1,y+0), (x+1,y+0), (x+0,y-1), (x+0,y+1))
 
     def can_move(self) -> list:
-        return [i for i in self.directions() if Info.is_empty(*i)]
+        return [i for i in self.directions() if Info.is_empty(*i) and i not in Info.get_attacks()]
 
     def can_capture(self) -> list:
-        return Info.is_enemy(self, self.directions())
+        return [i for i in Info.is_enemy(self, self.directions()) if i not in Info.get_attacks()]
 
     def is_attacking(self) -> list:
         return [i for i in self.directions() if Info.is_inside(*i)]

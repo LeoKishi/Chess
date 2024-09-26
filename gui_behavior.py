@@ -86,8 +86,8 @@ class Draw:
         for x,y in Draw.attacks:
             root.board_ui[x][y].set_attack('')
 
-        if game.attacks:
-            for x,y in game.attacks:
+        if game.threats['attack']:
+            for x,y in game.threats['attack']:
                 root.board_ui[x][y].set_attack(root.attack_img)
                 root.board_ui[x][y].raise_piece()
                 Draw.attacks.append((x,y))
