@@ -14,8 +14,11 @@ class GameState:
     captures = None
     last_move = None
     check = False
-    pinned = None
-    threats = {'attack':list(), 'checking':list(), 'sight':list()}
+    threats = {'attack':list(),
+               'checking':list(),
+               'sight':list(),
+               'w_pinned':list(),
+               'b_pinned':list()}
     turn = 'White'
 
 
@@ -30,17 +33,22 @@ class GameState:
             # BLINK KING TO SIGNAL CHECK
             print('in check')
             return
-        
-        cls.register_last_move(cls.selected, (x,y))
+
+        color = Info.color(x,y)
+        if old_pos in cls.threats['w_pinned' if color == 'White' else 'b_pinned']:
+            if not (x,y) in cls.threats['b_pinned' if color == 'White' else 'w_pinned']:
+                cls.register_move(cls.selected, old_pos)
+                cls.clear_selected()
+                # BLINK KING TO SIGNAL CHECK
+                print('in check or pinned')
+                return
+
+        cls.register_last_move(cls.selected, old_pos, (x,y))
         cls.register_threats(x,y)
-
-        if cls.check: cls.try_check_mate()
-
+        cls.try_check_mate()
         cls.first_move_status(x,y)
         cls.new_turn()
         cls.clear_selected()
-
-
 
     @classmethod
     def clear_selected(cls):
@@ -63,8 +71,9 @@ class GameState:
         cls.board[new_x][new_y] = piece
 
     @classmethod
-    def register_last_move(cls, piece, new_pos:list|tuple):
-        cls.last_move = (piece.pos, new_pos)
+    def register_last_move(cls, piece, old_pos, new_pos:list|tuple):
+        cls.last_piece = piece
+        cls.last_move = (old_pos, new_pos)
 
     @staticmethod
     def first_move_status(x, y):
@@ -82,13 +91,19 @@ class GameState:
     @classmethod
     def register_threats(cls, x, y):
         attack, checking, sight = Find.find_checks(Info.get(x,y))
+        b_pinned, w_pinned = Find.find_all_pins()
         GameState.check = True if checking else False
         GameState.threats = {'attack':attack,
                              'checking':checking,
-                             'sight':sight}
+                             'sight':sight,
+                             'w_pinned':w_pinned,
+                             'b_pinned':b_pinned}
 
     @classmethod
     def try_check_mate(cls) -> bool:
+        if not cls.check:
+            return False
+
         can_move = True
         can_defend = False
         for x,y in Util.range2d():
@@ -111,11 +126,44 @@ class GameState:
         
 
 
-            
-
-
-
 class Find:
+
+    @classmethod
+    def find_all_pins(cls) -> tuple:
+        b_pinned = list()
+        w_pinned = list()
+        for x,y in Util.range2d():
+            if not Info.is_piece(x,y):
+                continue
+
+            if Info.color(x,y) == 'White':
+                b_pinned += Info.get(x,y).is_pinning()
+            else:
+                w_pinned += Info.get(x,y).is_pinning()
+        return (b_pinned, w_pinned)
+
+    @classmethod
+    def find_pin(cls, piece, direction) -> list:
+        x, y = piece.pos
+        mod_x, mod_y = direction
+        line = list()
+        pinned = None
+
+        while True:
+            x += mod_x
+            y += mod_y
+            if not Info.is_inside(x,y):
+                break
+            line.append((x,y))
+
+        for i in line:
+            if not pinned and Info.is_piece(*i):
+                pinned = i
+            elif Info.is_enemy(piece, i):
+                if Info.is_king(*i):
+                    return [pinned]
+                break
+        return []
 
     @classmethod
     def find_checks(cls, piece) -> tuple:
@@ -288,6 +336,7 @@ class Info:
 
 
 
+
 class Util:
     
     @staticmethod
@@ -299,6 +348,8 @@ class Util:
     @staticmethod
     def unique(pos_list) -> list:
         return list(set(pos_list))
+
+
 
 
 if __name__ == '__main__':
