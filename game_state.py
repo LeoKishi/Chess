@@ -15,7 +15,7 @@ class GameState:
     captures = None
     last_move = None
     check = False
-    threats = {'attack':list(), 'attacker':list(), 'sight':list()}
+    threats = {'attack':list(), 'checking':list(), 'sight':list()}
     turn = 'White'
 
 
@@ -33,6 +33,9 @@ class GameState:
         
         cls.register_last_move(cls.selected, (x,y))
         cls.register_threats(x,y)
+
+        cls.try_check_mate()
+
         cls.first_move_status(x,y)
         cls.new_turn()
         cls.clear_selected()
@@ -78,15 +81,41 @@ class GameState:
 
     @classmethod
     def register_threats(cls, x, y):
-        attack, attacker, sight = Find.find_checks(Info.get(x,y))
-        if attacker:
-            GameState.check = True
-            print('check')
+        attack, checking, sight = Find.find_checks(Info.get(x,y))
+        GameState.check = True if checking else False
         GameState.threats = {'attack':attack,
-                             'attacker':attacker,
+                             'checking':checking,
                              'sight':sight}
 
 
+    @classmethod
+    def try_check_mate(cls) -> bool:
+        if not cls.check:
+            return False
+
+        can_move = True
+        can_defend = False
+        for x,y in Util.range2d():
+            if Info.is_same_color(x,y):
+                continue
+
+            if Info.is_king(x,y) and not Info.get(x,y).can_move():
+                can_move = False
+                continue
+
+            if Info.is_piece(x,y):
+                for i in Info.get(x,y).can_move() + Info.get(x,y).can_capture():
+                    if i in Info.get_sight():
+                        can_defend = True
+                        return False
+
+        if not (can_move and can_defend):
+            print('check mate')
+
+        
+
+
+            
 
 
 
@@ -95,7 +124,7 @@ class Find:
     @classmethod
     def find_checks(cls, piece) -> tuple:
         attacks = list()
-        attackers = list()
+        checking = list()
         sight = list()
         for x,y in Util.range2d():
             if not (Info.is_piece(x,y) and Info.color(x,y) == piece.color):
@@ -103,9 +132,9 @@ class Find:
             for line in Info.get(x,y).is_attacking():
                 attacks += line
                 if Info.is_in_sight(piece, line):
-                    attackers.append((x,y))
-                    sight += [i for i in line if not Info.is_king(*i)]
-        return (Util.unique(attacks), attackers, sight)
+                    checking.append((x,y))
+                    sight += [i for i in line if not Info.is_king(*i)] + [(x,y)]
+        return (Util.unique(attacks), checking, sight)
 
     @staticmethod
     def find_attacks(piece, direction) -> list:
@@ -115,12 +144,10 @@ class Find:
         while True:
             x += mod_x
             y += mod_y
-            if not Info.is_inside(x, y):
-                break
-            elif not Info.is_empty(x, y):
+            if Info.is_inside(x, y):
                 attacks.append((x,y))
+            if not Info.is_empty(x, y):
                 break
-            attacks.append((x,y))
         return attacks
 
     @staticmethod
@@ -131,9 +158,11 @@ class Find:
         while True:
             x += mod_x
             y += mod_y
-            if Info.is_enemy(GameState.selected, (x,y)):
-                captures.append((x,y))
-            else:
+            if Info.is_piece(x,y):
+                if Info.is_enemy(piece, (x,y)):
+                    captures.append((x,y))
+                break
+            elif not Info.is_inside(x,y):
                 break
         return captures
     
@@ -172,7 +201,7 @@ class Info:
         if not GameState.check:
             return False
 
-        for i in GameState.threats['attacker']:
+        for i in cls.get_checking():
             for j in tuple(set([i for item in Info.get(*i).is_attacking() for i in item])):
                 if not Info.is_piece(*j):
                     continue
@@ -223,8 +252,12 @@ class Info:
         return GameState.threats['attack']
 
     @staticmethod
-    def get_attackers() -> list:
-        return GameState.threats['attacker']
+    def get_checking() -> list:
+        return GameState.threats['checking']
+
+    @staticmethod
+    def get_sight() -> list:
+        return GameState.threats['sight']
 
     @classmethod
     def color(cls, x, y) -> str | None:
