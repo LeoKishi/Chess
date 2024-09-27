@@ -67,6 +67,7 @@ class Rook(Piece):
         b_rook = loader.get_sprite((60,60), (0,2))
         self.image = w_rook if color == 'White' else b_rook
         self.directions = ((-1,0), (1,0), (0,-1), (0,1))
+        self.first_move = True
 
     def can_move(self) -> list:
         moves = list()

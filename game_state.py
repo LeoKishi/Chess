@@ -61,6 +61,8 @@ class GameState:
         if Info.is_piece(x, y):
             cls.selected = Info.get(x,y)
             Find.find_possible_actions(x, y)
+            if Info.is_king(x, y):
+                Info.can_castle((x, y))
 
     @classmethod
     def register_move(cls, piece, new_pos:list|tuple):
@@ -78,7 +80,7 @@ class GameState:
     @staticmethod
     def first_move_status(x, y):
         piece = Info.get(x,y)
-        if piece.name in ('Pawn', 'King'):
+        if piece.name in ('Pawn', 'Rook', 'King'):
             piece.first_move = False
 
     @classmethod
@@ -237,6 +239,43 @@ class Find:
 class Info:
 
     @classmethod
+    def can_castle(cls, king_pos):
+        x, y = king_pos
+        right = None
+        left = None
+        if not cls.is_castle_blocked(king_pos, cls.line_to_rook(king_pos,'right')):
+            right = (x, y+2)
+        if not cls.is_castle_blocked(king_pos, cls.line_to_rook(king_pos,'left')):
+            left = (x, y-2)
+            
+        print(f'can castle right: {right}')
+        print(f'can castle left: {left}')
+        print([left, right])
+
+
+    @classmethod
+    def is_castle_blocked(cls, king_pos, line) -> bool:
+        if not (Info.get(*king_pos).first_move):
+            return True
+        if not (Info.name(*line[-1], 'Rook')):
+            return True
+        if Info.get(*line.pop()).first_move:
+            for i in line:
+                if not (Info.is_empty(*i) and i not in Info.get_attacks()):
+                    return True
+        
+    @classmethod
+    def line_to_rook(cls, king_pos, side) -> list:
+        x, y = king_pos
+        mod = 1 if side == 'right' else -1
+        line = list()
+        i = 1
+        while Info.is_inside(x, y+i*mod):
+            line.append((x, y+i*mod))
+            i += 1
+        return line
+
+    @classmethod
     def is_in_sight(cls, piece, line) -> bool:
         for i in line:
             if not (cls.is_enemy(piece, i) and cls.is_king(*i)):
@@ -340,6 +379,10 @@ class Info:
     @staticmethod
     def get_player() -> str:
         return GameState.player
+
+    @classmethod
+    def name(cls, x, y, name) -> str:
+        return cls.is_piece(x, y) and cls.get(x, y).name == name
 
 
 
