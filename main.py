@@ -12,6 +12,8 @@ class ChessBoard(tk.Tk):
         self.geometry('480x480')
         self.resizable(0,0)
 
+        self.attack_indicator = False
+
         self.board_ui = [[None for x in range(8)] for y in range(8)]
         self.player = player_color
 
@@ -42,7 +44,7 @@ class ChessBoard(tk.Tk):
             Draw.draw_last_move(self)
             Drag.stop_drag()
             # DEVTOOL
-            Draw.draw_attacks(self)
+            if self.attack_indicator:Draw.draw_attacks(self)
 
         elif game.selected and not Info.is_same_color(x, y):
             if not Drag.stop_drag():
