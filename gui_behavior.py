@@ -106,7 +106,6 @@ class Draw:
         root.board_ui[old_x][old_y].set_piece(Info.get(*old_pos).image)
         root.board_ui[new_x][new_y].set_piece('')
 
-
     @staticmethod
     def draw_elements(root):
         if Drag.hover:
@@ -115,7 +114,7 @@ class Draw:
             Drag.hover = None
         Draw.draw_pieces(root)
         Draw.draw_highlight(root)
-        Draw.draw_indicator(root)
+        
 
     @staticmethod
     def reset_lists():

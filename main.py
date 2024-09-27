@@ -43,6 +43,7 @@ class ChessBoard(tk.Tk):
         elif (x,y) in Info.possible_moves():
             if game.process_action(x, y):
                 Draw.draw_last_move(self)
+                Draw.draw_indicator(self)
             else:
                 Draw.undo_draw_last_move(self)
             Drag.stop_drag()

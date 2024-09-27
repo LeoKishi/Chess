@@ -61,8 +61,8 @@ class GameState:
         cls.last_capture = Info.get(*new_pos)
 
     @classmethod
-    def undo_register_last_move(cls):
-        pass
+    def undo_register_last_move(cls, old_last_move):
+        cls.last_move = old_last_move
 
     @classmethod
     def register_castle(cls, x, y, old_pos):
@@ -86,7 +86,7 @@ class GameState:
     def select(cls, x, y):
         if Info.is_piece(x, y):
             cls.selected = Info.get(x,y)
-            Find.find_possible_actions(x, y)
+            cls.register_possible_actions(x, y)
 
     @classmethod
     def register_move(cls, piece, new_pos:list|tuple):
@@ -148,6 +148,14 @@ class GameState:
     def set_player(cls, color):
         cls.player = color
         cls.turn = color
+
+    @staticmethod
+    def register_possible_actions(x, y):
+        GameState.moves = Info.get(x,y).can_move()
+        GameState.captures = Info.get(x,y).can_capture()
+        if Info.is_king(x, y):
+            GameState.castle = Find.find_castle((x, y))
+            GameState.moves += GameState.castle
 
 
 
@@ -261,13 +269,6 @@ class Find:
             path.append((x,y))
         return path
 
-    @staticmethod
-    def find_possible_actions(x, y):
-        GameState.moves = Info.get(x,y).can_move()
-        GameState.captures = Info.get(x,y).can_capture()
-        if Info.is_king(x, y):
-            GameState.castle = Find.find_castle((x, y))
-            GameState.moves += GameState.castle
 
 
 

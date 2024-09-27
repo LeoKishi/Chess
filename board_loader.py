@@ -50,8 +50,8 @@ class BoardLoader:
             game.board[pos[0]][pos[1]] = piece_type(color, pos)
 
         for y in range(8):
-            #new_piece(Pawn, player2, (1,y))
-            #new_piece(Pawn, player1, (6,y))
+            new_piece(Pawn, player2, (1,y))
+            new_piece(Pawn, player1, (6,y))
             pass
 
         new_piece(Rook, player2, (0,0))
