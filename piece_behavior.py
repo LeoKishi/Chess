@@ -49,13 +49,13 @@ class Pawn(Piece):
     def can_capture(self) -> list:
         x, y = self.pos
         mod = -1 if self.color == 'White' else 1
-        return [(x+mod,y+i) for i in range(-1,2,2) if Info.is_enemy(self, (x+mod,y+i))]
+        return [(x+mod,y+i) for i in range(-1,2,2) if Info.is_enemy(self,(x+mod,y+i))]
 
 
     def is_attacking(self) -> list:
         x, y = self.pos
         mod = -1 if self.color == 'White' else 1
-        return [(x+mod,y+i) for i in range(-1,2,2) if Info.is_inside(x+mod,y+i)]
+        return [[(x+mod,y+i)] for i in range(-1,2,2) if Info.is_inside(x+mod,y+i)]
 
 
 
@@ -87,7 +87,7 @@ class Rook(Piece):
     def is_attacking(self) -> list:
         attacks = list()
         for i in self.directions:
-            attacks += Find.find_attacks(self, i)
+            attacks.append(Find.find_attacks(self, i))
         return attacks
 
 
@@ -116,7 +116,7 @@ class Knight(Piece):
 
 
     def is_attacking(self) -> list:
-        return [i for i in self.jumps() if Info.is_inside(*i)]
+        return [[i] for i in self.jumps() if Info.is_inside(*i)]
 
 
 
@@ -148,7 +148,7 @@ class Bishop(Piece):
     def is_attacking(self) -> list:
         attacks = list()
         for i in self.directions:
-            attacks += Find.find_attacks(self, i)
+            attacks.append(Find.find_attacks(self, i))
         return attacks
 
 
@@ -180,7 +180,7 @@ class Queen(Piece):
     def is_attacking(self) -> list:
         attacks = list()
         for i in self.directions:
-            attacks += Find.find_attacks(self, i)
+            attacks.append(Find.find_attacks(self, i))
         return attacks
     
 
@@ -205,7 +205,7 @@ class King(Piece):
         return [i for i in Info.is_enemy(self, self.directions()) if i not in Info.get_attacks()]
 
     def is_attacking(self) -> list:
-        return [i for i in self.directions() if Info.is_inside(*i)]
+        return [[i] for i in self.directions() if Info.is_inside(*i)]
 
 
 

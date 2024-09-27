@@ -24,7 +24,7 @@ class GameState:
         old_pos = cls.selected.pos
         cls.register_move(cls.selected, (x,y))
 
-        if cls.is_in_check():
+        if Info.is_in_check():
             cls.register_move(cls.selected, old_pos)
             cls.clear_selected()
             # BLINK KING TO SIGNAL CHECK
@@ -78,11 +78,14 @@ class GameState:
 
     @classmethod
     def register_threats(cls, x, y):
-        attack, attacker = Find.find_checks(Info.get(x,y))
+        attack, attacker, sight = Find.find_checks(Info.get(x,y))
+        print(sight)
         if attacker:
             GameState.check = True
             print('check')
-        GameState.threats = {'attack':attack, 'attacker':attacker}
+        GameState.threats = {'attack':attack,
+                             'attacker':attacker,
+                             'sight':sight}
 
 
 
@@ -94,15 +97,18 @@ class Find:
     def find_checks(piece) -> tuple:
         attacks = list()
         attackers = list()
+        sight = list()
         for x,y in Util.range2d():
             if not (Info.is_piece(x,y) and Info.color(x,y) == piece.color):
                 continue
-            temp = Info.get(x,y).is_attacking()
-            attacks += temp
-            for i in temp:
-                if Info.is_enemy(piece, i) and Info.get(*i).name == 'King':
-                    attackers.append((x,y))
-        return (list(set(attacks)), attackers)
+            for line in Info.get(x,y).is_attacking():
+                attacks += line
+                for i in line:
+                    if Info.is_enemy(piece, i) and Info.get(*i).name == 'King':
+                        attackers.append((x,y))
+                        sight += line
+                
+        return (list(set(attacks)), attackers, list(set(sight)))
 
     @staticmethod
     def find_attacks(piece, direction) -> list:
@@ -130,9 +136,9 @@ class Find:
             y += mod_y
             if Info.is_enemy(GameState.selected, (x,y)):
                 captures.append((x,y))
-            elif Info.is_inside(x,y):
-                continue
-            break
+                print((x,y))
+            else:
+                break
         return captures
     
     @staticmethod
@@ -164,7 +170,7 @@ class Info:
             return False
 
         for i in GameState.threats['attacker']:
-            for j in tuple(set(Info.get(*i).is_attacking())):
+            for j in tuple(set([i for item in Info.get(*i).is_attacking() for i in item])):
                 if not Info.is_piece(*j):
                     continue
                 if cls.get(*j).name == 'King' and cls.is_enemy(cls.get(*i), j):
