@@ -13,6 +13,7 @@ class GameState:
     moves = None
     captures = None
     last_move = None
+    castle = None
     check = False
     turn = 'White'
     threats = {'attack':list(),
@@ -34,21 +35,32 @@ class GameState:
             print('in check')
             return
 
-        color = Info.color(x,y)
-        if old_pos in cls.threats['w_pinned' if color == 'White' else 'b_pinned']:
-            if not (x,y) in cls.threats['b_pinned' if color == 'White' else 'w_pinned']:
-                cls.register_move(cls.selected, old_pos)
-                cls.clear_selected()
-                # BLINK KING TO SIGNAL CHECK
-                print('in check or pinned')
-                return
-
+        if Info.is_pinned(x, y, old_pos):
+            cls.register_move(cls.selected, old_pos)
+            cls.clear_selected()
+            # BLINK KING TO SIGNAL CHECK
+            print('pinned')
+            return
+            
+        cls.register_castle(x,y,old_pos)
         cls.register_last_move(cls.selected, old_pos, (x,y))
         cls.register_threats(x,y)
         cls.try_check_mate()
         cls.first_move_status(x,y)
         cls.new_turn()
         cls.clear_selected()
+
+    @classmethod
+    def register_castle(cls, x, y, old_pos):
+        if Info.is_king(*cls.selected.pos):
+            if (x,y) in cls.castle:
+                cls.register_move(cls.selected, old_pos)
+                if y < 4:
+                    cls.register_move(Info.get(x,0), (x,3))
+                    cls.register_move(cls.selected, (x,2))
+                if y > 4:
+                    cls.register_move(Info.get(x,7), (x,5))
+                    cls.register_move(cls.selected, (x,6))
 
     @classmethod
     def clear_selected(cls):
@@ -61,8 +73,6 @@ class GameState:
         if Info.is_piece(x, y):
             cls.selected = Info.get(x,y)
             Find.find_possible_actions(x, y)
-            if Info.is_king(x, y):
-                Info.can_castle((x, y))
 
     @classmethod
     def register_move(cls, piece, new_pos:list|tuple):
@@ -132,6 +142,16 @@ class GameState:
 
 
 class Find:
+
+    @staticmethod
+    def find_castle(king_pos) -> list:
+        x, y = king_pos
+        right, left = [], []
+        if not Info.is_castle_blocked(king_pos, Info.line_to_rook(king_pos,'right')):
+            right = [(x, y+2)]
+        if not Info.is_castle_blocked(king_pos, Info.line_to_rook(king_pos,'left')):
+            left = [(x, y-2)]
+        return right + left
 
     @classmethod
     def find_all_pins(cls) -> tuple:
@@ -232,26 +252,20 @@ class Find:
     def find_possible_actions(x, y):
         GameState.moves = Info.get(x,y).can_move()
         GameState.captures = Info.get(x,y).can_capture()
-
+        if Info.is_king(x, y):
+            GameState.castle = Find.find_castle((x, y))
+            GameState.moves += GameState.castle
 
 
 
 class Info:
 
-    @classmethod
-    def can_castle(cls, king_pos):
-        x, y = king_pos
-        right = None
-        left = None
-        if not cls.is_castle_blocked(king_pos, cls.line_to_rook(king_pos,'right')):
-            right = (x, y+2)
-        if not cls.is_castle_blocked(king_pos, cls.line_to_rook(king_pos,'left')):
-            left = (x, y-2)
-            
-        print(f'can castle right: {right}')
-        print(f'can castle left: {left}')
-        print([left, right])
-
+    @staticmethod
+    def is_pinned(x, y, old_pos) -> bool:
+        color = Info.color(x,y)
+        if old_pos in GameState.threats['w_pinned' if color == 'White' else 'b_pinned']:
+            if not (x,y) in GameState.threats['b_pinned' if color == 'White' else 'w_pinned']:
+                return True
 
     @classmethod
     def is_castle_blocked(cls, king_pos, line) -> bool:
