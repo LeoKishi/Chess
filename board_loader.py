@@ -53,8 +53,6 @@ class BoardLoader:
             new_piece(Pawn, player2, (1,y))
             new_piece(Pawn, player1, (6,y))
 
-        new_piece(Pawn, player2, (5,2))
-
         new_piece(Rook, player2, (0,0))
         new_piece(Rook, player2, (0,7))
         new_piece(Rook, player1, (7,0))

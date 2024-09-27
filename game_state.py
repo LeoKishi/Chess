@@ -1,6 +1,5 @@
 
 # TODO:
-# check mate
 # stop a pinned piece from moving if the king is behind it
 # castling
 # don't allow castling if a square in the path is being attacked
@@ -15,6 +14,7 @@ class GameState:
     captures = None
     last_move = None
     check = False
+    pinned = None
     threats = {'attack':list(), 'checking':list(), 'sight':list()}
     turn = 'White'
 
@@ -87,7 +87,6 @@ class GameState:
                              'checking':checking,
                              'sight':sight}
 
-
     @classmethod
     def try_check_mate(cls) -> bool:
         can_move = True
@@ -98,6 +97,7 @@ class GameState:
 
             if Info.is_king(x,y) and not Info.get(x,y).can_move():
                 can_move = False
+                print('cannot move')
                 continue
 
             for i in Info.get(x,y).can_move() + Info.get(x,y).can_capture():
@@ -105,7 +105,7 @@ class GameState:
                     can_defend = True
                     return False
 
-        if not (can_move and can_defend):
+        if not can_move and not can_defend:
             print('check mate')
 
         
