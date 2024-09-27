@@ -15,7 +15,7 @@ class GameState:
     captures = None
     last_move = None
     check = False
-    threats = {'attack':list(), 'attacker':list()}
+    threats = {'attack':list(), 'attacker':list(), 'sight':list()}
     turn = 'White'
 
 
@@ -102,17 +102,10 @@ class Find:
                 continue
             for line in Info.get(x,y).is_attacking():
                 attacks += line
-                if cls.has_sight(piece, line):
+                if Info.is_in_sight(piece, line):
                     attackers.append((x,y))
                     sight += [i for i in line if not Info.is_king(*i)]
         return (Util.unique(attacks), attackers, sight)
-
-    @classmethod
-    def has_sight(cls, piece, line) -> bool:
-        for i in line:
-            if not (Info.is_enemy(piece, i) and Info.is_king(*i)):
-                continue
-            return True
 
     @staticmethod
     def find_attacks(piece, direction) -> list:
@@ -166,6 +159,13 @@ class Find:
 
 
 class Info:
+
+    @classmethod
+    def is_in_sight(cls, piece, line) -> bool:
+        for i in line:
+            if not (cls.is_enemy(piece, i) and cls.is_king(*i)):
+                continue
+            return True
 
     @classmethod
     def is_in_check(cls) -> bool:
