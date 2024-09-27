@@ -79,7 +79,6 @@ class GameState:
     @classmethod
     def register_threats(cls, x, y):
         attack, attacker, sight = Find.find_checks(Info.get(x,y))
-        print(sight)
         if attacker:
             GameState.check = True
             print('check')
@@ -93,8 +92,8 @@ class GameState:
 
 class Find:
 
-    @staticmethod
-    def find_checks(piece) -> tuple:
+    @classmethod
+    def find_checks(cls, piece) -> tuple:
         attacks = list()
         attackers = list()
         sight = list()
@@ -103,12 +102,17 @@ class Find:
                 continue
             for line in Info.get(x,y).is_attacking():
                 attacks += line
-                for i in line:
-                    if Info.is_enemy(piece, i) and Info.get(*i).name == 'King':
-                        attackers.append((x,y))
-                        sight += line
-                
-        return (list(set(attacks)), attackers, list(set(sight)))
+                if cls.has_sight(piece, line):
+                    attackers.append((x,y))
+                    sight += [i for i in line if not Info.is_king(*i)]
+        return (Util.unique(attacks), attackers, sight)
+
+    @classmethod
+    def has_sight(cls, piece, line) -> bool:
+        for i in line:
+            if not (Info.is_enemy(piece, i) and Info.is_king(*i)):
+                continue
+            return True
 
     @staticmethod
     def find_attacks(piece, direction) -> list:
@@ -136,7 +140,6 @@ class Find:
             y += mod_y
             if Info.is_enemy(GameState.selected, (x,y)):
                 captures.append((x,y))
-                print((x,y))
             else:
                 break
         return captures
@@ -249,6 +252,10 @@ class Info:
         if cls.is_piece(x, y):
             return cls.color(x,y) == GameState.selected.color
 
+    @classmethod
+    def is_king(cls, x, y) -> bool:
+        if cls.is_piece(x, y) and cls.get(x,y).name == 'King':
+            return True
 
 
 
@@ -260,7 +267,9 @@ class Util:
             for y in range(8):
                 yield (x,y)
 
-
+    @staticmethod
+    def unique(pos_list) -> list:
+        return list(set(pos_list))
 
 
 if __name__ == '__main__':
