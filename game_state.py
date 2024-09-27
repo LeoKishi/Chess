@@ -34,7 +34,7 @@ class GameState:
         cls.register_last_move(cls.selected, (x,y))
         cls.register_threats(x,y)
 
-        cls.try_check_mate()
+        if cls.check: cls.try_check_mate()
 
         cls.first_move_status(x,y)
         cls.new_turn()
@@ -90,24 +90,20 @@ class GameState:
 
     @classmethod
     def try_check_mate(cls) -> bool:
-        if not cls.check:
-            return False
-
         can_move = True
         can_defend = False
         for x,y in Util.range2d():
-            if Info.is_same_color(x,y):
+            if not Info.is_enemy(cls.selected, (x,y)):
                 continue
 
             if Info.is_king(x,y) and not Info.get(x,y).can_move():
                 can_move = False
                 continue
 
-            if Info.is_piece(x,y):
-                for i in Info.get(x,y).can_move() + Info.get(x,y).can_capture():
-                    if i in Info.get_sight():
-                        can_defend = True
-                        return False
+            for i in Info.get(x,y).can_move() + Info.get(x,y).can_capture():
+                if i in Info.get_sight():
+                    can_defend = True
+                    return False
 
         if not (can_move and can_defend):
             print('check mate')
