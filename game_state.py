@@ -1,6 +1,5 @@
 
 # TODO:
-# stop a pinned piece from moving if the king is behind it
 # castling
 # don't allow castling if a square in the path is being attacked
 # en passant
@@ -9,17 +8,18 @@
 
 class GameState:
     board = [[None for row in range(8)] for col in range(8)]
+    player = None
     selected = None
     moves = None
     captures = None
     last_move = None
     check = False
+    turn = 'White'
     threats = {'attack':list(),
                'checking':list(),
                'sight':list(),
                'w_pinned':list(),
                'b_pinned':list()}
-    turn = 'White'
 
 
     @classmethod
@@ -123,7 +123,10 @@ class GameState:
         if not can_move and not can_defend:
             print('check mate')
 
-        
+    @classmethod
+    def set_player(cls, color):
+        cls.player = color
+        cls.turn = color
 
 
 class Find:
@@ -334,6 +337,9 @@ class Info:
         if cls.is_piece(x, y) and cls.get(x,y).name == 'King':
             return True
 
+    @staticmethod
+    def get_player() -> str:
+        return GameState.player
 
 
 

@@ -13,6 +13,7 @@ class ChessBoard(tk.Tk):
         self.resizable(0,0)
 
         self.attack_indicator = False
+        game.set_player(player_color)
 
         self.board_ui = [[None for x in range(8)] for y in range(8)]
         self.player = player_color

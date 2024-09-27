@@ -1,4 +1,3 @@
-from tkinter import PhotoImage
 from game_state import Find
 from game_state import Info
 from sprite_loader import SpriteSheet
@@ -40,18 +39,18 @@ class Pawn(Piece):
 
     def can_move(self) -> list:
         x, y = self.pos
-        mod = -1 if self.color == 'White' else 1
+        mod = -1 if self.color == Info.get_player() else 1
         stop = 3 if self.first_move else 2
         return [(x+i*mod,y) for i in range(1,stop) if Info.is_empty(x+i*mod,y)]
 
     def can_capture(self) -> list:
         x, y = self.pos
-        mod = -1 if self.color == 'White' else 1
+        mod = -1 if self.color == Info.get_player() else 1
         return [(x+mod,y+i) for i in range(-1,2,2) if Info.is_enemy(self,(x+mod,y+i))]
 
     def is_attacking(self) -> list:
         x, y = self.pos
-        mod = -1 if self.color == 'White' else 1
+        mod = -1 if self.color == Info.get_player() else 1
         return [[(x+mod,y+i)] for i in range(-1,2,2) if Info.is_inside(x+mod,y+i)]
 
     def is_pinning(self) -> list:
