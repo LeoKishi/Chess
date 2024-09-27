@@ -26,6 +26,10 @@ class ChessBoard(tk.Tk):
         self.bind('<ButtonPress-1>', lambda event: self.click_handler(event.y, event.x))
         self.bind('<ButtonRelease-1>', self.click_release)
 
+    def unbind_functions(self):
+        self.unbind('<ButtonPress-1>')
+        self.unbind('<ButtonRelease-1>')
+
 
     def click_handler(self, raw_x, raw_y):
         x, y = raw_x//60, raw_y//60
@@ -44,6 +48,11 @@ class ChessBoard(tk.Tk):
             if game.process_action(x, y):
                 Draw.draw_last_move(self)
                 Draw.draw_indicator(self)
+                if game.check_mate:
+                    Draw.draw_elements(self)
+                    self.board_ui[x][y].raise_piece()
+                    self.unbind_functions()
+                    return
             else:
                 Draw.undo_draw_last_move(self)
             Drag.stop_drag()

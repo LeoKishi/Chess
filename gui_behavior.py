@@ -114,7 +114,6 @@ class Draw:
             Drag.hover = None
         Draw.draw_pieces(root)
         Draw.draw_highlight(root)
-        
 
     @staticmethod
     def reset_lists():

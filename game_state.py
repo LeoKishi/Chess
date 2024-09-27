@@ -14,6 +14,7 @@ class GameState:
     last_capture = None
     castle = None
     check = False
+    check_mate = False
     turn = 'White'
     threats = {'attack':list(),
                'checking':list(),
@@ -39,7 +40,9 @@ class GameState:
 
         cls.register_castle(x,y,old_pos)
         cls.register_threats(x,y)
-        cls.try_check_mate()
+        if cls.try_check_mate():
+            print('check mate')
+            cls.check_mate = True
         cls.first_move_status(x,y)
         cls.new_turn()
         cls.clear_selected()
@@ -133,7 +136,6 @@ class GameState:
 
             if Info.is_king(x,y) and not Info.get(x,y).can_move():
                 can_move = False
-                print('cannot move')
                 continue
 
             for i in Info.get(x,y).can_move() + Info.get(x,y).can_capture():
@@ -142,7 +144,7 @@ class GameState:
                     return False
 
         if not can_move and not can_defend:
-            print('check mate')
+            return True
 
     @classmethod
     def set_player(cls, color):
