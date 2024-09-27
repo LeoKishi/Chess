@@ -99,6 +99,15 @@ class Draw:
         root.board_ui[old_x][old_y].set_piece('')
 
     @staticmethod
+    def undo_draw_last_move(root):
+        old_pos, new_pos = game.last_move
+        new_x, new_y = new_pos
+        old_x, old_y = old_pos
+        root.board_ui[old_x][old_y].set_piece(Info.get(*old_pos).image)
+        root.board_ui[new_x][new_y].set_piece('')
+
+
+    @staticmethod
     def draw_elements(root):
         if Drag.hover:
             x, y = Drag.hover

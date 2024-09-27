@@ -1,7 +1,5 @@
 
 # TODO:
-# castling
-# don't allow castling if a square in the path is being attacked
 # en passant
 # play sounds for piece movement, capture, check and checkmate
 
@@ -13,6 +11,7 @@ class GameState:
     moves = None
     captures = None
     last_move = None
+    last_capture = None
     castle = None
     check = False
     turn = 'White'
@@ -24,31 +23,46 @@ class GameState:
 
 
     @classmethod
-    def process_action(cls, x, y):
+    def process_action(cls, x, y) -> bool:
         old_pos = cls.selected.pos
+        old_last_move = cls.last_move
+        cls.register_last_move(cls.selected, (x,y))
         cls.register_move(cls.selected, (x,y))
 
         if Info.is_in_check():
-            cls.register_move(cls.selected, old_pos)
-            cls.clear_selected()
-            # BLINK KING TO SIGNAL CHECK
-            print('in check')
-            return
+            cls.undo_register_move(x,y,old_pos)
+            return False
 
         if Info.is_pinned(x, y, old_pos):
-            cls.register_move(cls.selected, old_pos)
-            cls.clear_selected()
-            # BLINK KING TO SIGNAL CHECK
-            print('pinned')
-            return
-            
+            cls.undo_register_move(x,y,old_pos)
+            return False
+
         cls.register_castle(x,y,old_pos)
-        cls.register_last_move(cls.selected, old_pos, (x,y))
         cls.register_threats(x,y)
         cls.try_check_mate()
         cls.first_move_status(x,y)
         cls.new_turn()
         cls.clear_selected()
+        return True
+
+    @classmethod
+    def undo_register_move(cls, x, y, old_pos):
+        cls.register_move(cls.selected, old_pos)
+        cls.clear_selected()
+        if cls.last_capture:
+            cls.register_move(cls.last_capture, (x,y))
+        # BLINK KING TO SIGNAL CHECK OR PIN
+        print('in check or pinned')
+
+    @classmethod
+    def register_last_move(cls, piece, new_pos:list|tuple):
+        cls.last_piece = piece
+        cls.last_move = (piece.pos, new_pos)
+        cls.last_capture = Info.get(*new_pos)
+
+    @classmethod
+    def undo_register_last_move(cls):
+        pass
 
     @classmethod
     def register_castle(cls, x, y, old_pos):
@@ -81,11 +95,6 @@ class GameState:
         piece.pos = new_pos
         cls.board[old_x][old_y] = None
         cls.board[new_x][new_y] = piece
-
-    @classmethod
-    def register_last_move(cls, piece, old_pos, new_pos:list|tuple):
-        cls.last_piece = piece
-        cls.last_move = (old_pos, new_pos)
 
     @staticmethod
     def first_move_status(x, y):
@@ -141,6 +150,8 @@ class GameState:
         cls.turn = color
 
 
+
+
 class Find:
 
     @staticmethod
@@ -165,6 +176,7 @@ class Find:
                 b_pinned += Info.get(x,y).is_pinning()
             else:
                 w_pinned += Info.get(x,y).is_pinning()
+
         return (b_pinned, w_pinned)
 
     @classmethod
@@ -186,7 +198,8 @@ class Find:
                 pinned = i
             elif Info.is_enemy(piece, i):
                 if Info.is_king(*i):
-                    return [pinned]
+                    line.pop()
+                    return [pinned, line]
                 break
         return []
 
@@ -265,7 +278,10 @@ class Info:
         color = Info.color(x,y)
         if old_pos in GameState.threats['w_pinned' if color == 'White' else 'b_pinned']:
             if not (x,y) in GameState.threats['b_pinned' if color == 'White' else 'w_pinned']:
-                return True
+                if (x,y) in GameState.threats['w_pinned' if color == 'White' else 'b_pinned'][1]:
+                    return False
+                else:
+                    return True
 
     @classmethod
     def is_castle_blocked(cls, king_pos, line) -> bool:
@@ -397,6 +413,13 @@ class Info:
     @classmethod
     def name(cls, x, y, name) -> str:
         return cls.is_piece(x, y) and cls.get(x, y).name == name
+
+    @classmethod
+    def get_king(cls, color):
+        for x,y in Util.range2d():
+            if cls.is_king(x,y) and cls.color(x,y) == color:
+                return cls.get(x,y)
+
 
 
 
