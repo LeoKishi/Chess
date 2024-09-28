@@ -66,7 +66,7 @@ class GameState:
 
     @classmethod
     def register_en_passant(cls, x, y):
-        if cls.en_passant and (x,y) == cls.en_passant[-1]:
+        if cls.en_passant and (x,y) == cls.en_passant[-1] and Info.name(x,y,'Pawn'):
             if cls.selected.color == cls.player:
                 cls.board[x+1][y] = None
             else:
