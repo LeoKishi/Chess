@@ -1,6 +1,5 @@
 
 # TODO:
-# en passant
 # play sounds for piece movement, capture, check and checkmate
 
 
@@ -15,6 +14,7 @@ class GameState:
     castle = None
     check = False
     check_mate = False
+    en_passant = list()
     turn = 'White'
     threats = {'attack':list(),
                'checking':list(),
@@ -39,6 +39,7 @@ class GameState:
             return False
 
         cls.register_castle(x,y,old_pos)
+        cls.register_en_passant(x, y)
         cls.register_threats(x,y)
         if cls.try_check_mate():
             print('check mate')
@@ -62,6 +63,16 @@ class GameState:
         cls.last_piece = piece
         cls.last_move = (piece.pos, new_pos)
         cls.last_capture = Info.get(*new_pos)
+
+    @classmethod
+    def register_en_passant(cls, x, y):
+        if cls.en_passant and (x,y) == cls.en_passant[-1]:
+            if cls.selected.color == cls.player:
+                cls.board[x+1][y] = None
+            else:
+                cls.board[x-1][y] = None
+            cls.en_passant = list()
+            print('en passant')
 
     @classmethod
     def undo_register_last_move(cls, old_last_move):
@@ -99,11 +110,13 @@ class GameState:
         cls.board[old_x][old_y] = None
         cls.board[new_x][new_y] = piece
 
-    @staticmethod
-    def first_move_status(x, y):
+    @classmethod
+    def first_move_status(cls, x, y):
         piece = Info.get(x,y)
         if piece.name in ('Pawn', 'Rook', 'King'):
             piece.first_move = False
+        if piece.name == 'Pawn' and x in {3, 4}:
+            cls.en_passant = Find.find_en_passant(x, y)
 
     @classmethod
     def new_turn(cls):
@@ -151,18 +164,32 @@ class GameState:
         cls.player = color
         cls.turn = color
 
-    @staticmethod
-    def register_possible_actions(x, y):
+    @classmethod
+    def register_possible_actions(cls, x, y):
         GameState.moves = Info.get(x,y).can_move()
         GameState.captures = Info.get(x,y).can_capture()
         if Info.is_king(x, y):
             GameState.castle = Find.find_castle((x, y))
             GameState.moves += GameState.castle
+        if Info.name(x, y, 'Pawn') and (x,y) in cls.en_passant:
+            GameState.moves.append(cls.en_passant[-1])
 
 
 
 
 class Find:
+
+    @staticmethod
+    def find_en_passant(x, y) -> list:
+        side = list()
+        for i in range(-1, 2, 2):
+            if Info.name(x, y+i, 'Pawn') and Info.is_enemy(Info.get(x,y+i), (x,y)):
+                side.append((x, y+i))
+        if Info.color(x,y) == GameState.player:
+            side.append((x+1, y))
+        else:
+            side.append((x-1, y))
+        return side
 
     @staticmethod
     def find_castle(king_pos) -> list:
@@ -414,15 +441,14 @@ class Info:
         return GameState.player
 
     @classmethod
-    def name(cls, x, y, name) -> str:
+    def name(cls, x, y, name) -> bool:
         return cls.is_piece(x, y) and cls.get(x, y).name == name
 
     @classmethod
-    def get_king(cls, color):
+    def get_king(cls, color) -> object:
         for x,y in Util.range2d():
             if cls.is_king(x,y) and cls.color(x,y) == color:
                 return cls.get(x,y)
-
 
 
 
