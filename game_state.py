@@ -200,10 +200,11 @@ class Find:
     def find_castle(king_pos) -> list:
         x, y = king_pos
         right, left = [], []
-        if not Info.is_castle_blocked(king_pos, Info.line_to_rook(king_pos,'right')):
-            right = [(x, y+2)]
-        if not Info.is_castle_blocked(king_pos, Info.line_to_rook(king_pos,'left')):
-            left = [(x, y-2)]
+        if not GameState.check:
+            if not Info.is_castle_blocked(king_pos, Info.line_to_rook(king_pos,'right')):
+                right = [(x, y+2)]
+            if not Info.is_castle_blocked(king_pos, Info.line_to_rook(king_pos,'left')):
+                left = [(x, y-2)]
         return right + left
 
     @classmethod
