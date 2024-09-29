@@ -3,13 +3,6 @@ from game_state import Info
 from sprite_loader import SpriteSheet
 
 
-# TODO:
-# redesign sprites in aseprite
-# make the pawn sprite smaller
-# add white outlines to the black pieces
-# add a faint thin outline of the opposite color in every piece for better visibility
-
-
 class Piece:
     def __init__(self, name:str, color:str, position:tuple):
         self.name = name

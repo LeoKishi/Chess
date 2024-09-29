@@ -168,7 +168,6 @@ class GameState:
     @classmethod
     def set_player(cls, color):
         cls.player = color
-        cls.turn = color
 
     @classmethod
     def register_possible_actions(cls, x, y):

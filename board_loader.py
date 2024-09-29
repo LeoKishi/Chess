@@ -2,19 +2,29 @@ import tkinter as tk
 from piece_behavior import *
 from game_state import GameState as game
 from game_state import Util
+from dragFrame import DragFrame
 
 
 class BoardLoader:
 
     @staticmethod
     def create_board(root):
-        root.canvas = tk.Canvas(root, height=480, width=480)
-        root.canvas.pack()
+        frame = DragFrame(root, height=550, width=550, bg='#282828')
+        frame.pack()
+        root.canvas = tk.Canvas(frame, height=488, width=488, highlightthickness=0)
+        root.canvas.place(anchor='center', relx=0.5, rely=0.5)
         BoardLoader.load_images(root)
         BoardLoader.create_grid(root)
         BoardLoader.populate_board(root)
         BoardLoader.set_board_color(root)
         root.bind_functions()
+        BoardLoader.load_border(root)
+
+    @staticmethod
+    def load_border(root):
+        img = root.w_border_img if game.player == 'White' else root.b_border_img
+        a = root.canvas.create_image(488, 488, anchor='nw', image=img)
+        root.canvas.moveto(a, 0, 0)
 
     @staticmethod
     def load_images(root):
@@ -25,6 +35,8 @@ class BoardLoader:
         root.indicator_img = tk.PhotoImage(file='assets/indicator.png')
         root.hover_img = tk.PhotoImage(file='assets/hover.png')
         root.attack_img = tk.PhotoImage(file='assets/attack.png')
+        root.w_border_img = tk.PhotoImage(file='assets/white_border.png')
+        root.b_border_img = tk.PhotoImage(file='assets/black_border.png')
 
     @staticmethod
     def create_grid(root):

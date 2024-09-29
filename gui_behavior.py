@@ -52,7 +52,7 @@ class Draw:
         for x, y in Util.range2d():
             piece = Info.get(x,y)
             root.board_ui[x][y].set_piece('' if piece is None else piece.image)
-            root.board_ui[x][y].place(x*60, y*60)
+            root.board_ui[x][y].place((x*60)+4, (y*60)+4)
 
     @staticmethod
     def draw_indicator(root):
@@ -134,11 +134,15 @@ class Mouse:
             return max(min(maxn, n), minn)
 
         if on_grid:
-            x, y = clamp(x//60, 0, 7), clamp(y//60, 0, 7)
+            x, y = clamp((x-4)//60, 0, 7), clamp((y-4)//60, 0, 7)
         else:
-            x, y = clamp(x, 0, 479), clamp(y, 0, 479)
+            x, y = clamp(x, 4, 483), clamp(y, 4, 483)
         
         if invert:
             return (y, x)
 
         return (x, y)
+
+    @staticmethod
+    def is_in_bounds(x, y):
+        return 4 <= x < 484 and 4 <= y < 484
