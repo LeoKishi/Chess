@@ -11,15 +11,14 @@ class ChessBoard(tk.Tk):
         self.title('Chess')
         self.geometry('480x480')
         self.resizable(0,0)
-
-        self.attack_indicator = False
-        game.set_player(player_color)
-
         self.board_ui = [[None for x in range(8)] for y in range(8)]
-        self.player = player_color
 
+        game.set_player(player_color)
         BoardLoader.create_board(self)
         Draw.draw_pieces(self)
+
+        # DEVTOOL
+        self.attack_indicator = False
 
 
     def bind_functions(self):

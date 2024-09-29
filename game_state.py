@@ -1,6 +1,12 @@
 
 # TODO:
+# start menu
+# end menu
 # play sounds for piece movement, capture, check and checkmate
+
+# ====== extra ======
+# timer
+# stockfish bot
 
 
 class GameState:

@@ -33,7 +33,7 @@ class BoardLoader:
 
     @staticmethod
     def set_board_color(root):
-        offset = 1 if root.player == 'White' else 0
+        offset = 1 if game.player == 'White' else 0
 
         for x, y in Util.range2d():
             if (x+y+offset) % 2 == 0:
@@ -43,7 +43,7 @@ class BoardLoader:
 
     @staticmethod
     def populate_board(root):
-        player1 = root.player
+        player1 = game.player
         player2 = 'Black' if player1 == 'White' else 'White'
 
         def new_piece(piece_type, color, pos):
