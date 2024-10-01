@@ -20,6 +20,7 @@ class GameState:
     castle = None
     check = False
     check_mate = False
+    pieces = None
     en_passant = list()
     turn = 'White'
     threats = {'attack':list(),
@@ -43,7 +44,13 @@ class GameState:
             cls.undo_register_move(x,y,old_pos)
             return False
 
+
         # check pawn promotion
+            # if piece selected: 
+                # register new piece at pos
+            # if exit selected:
+                # undo move
+                # return False
 
 
         cls.register_castle(x,y,old_pos)
@@ -133,8 +140,8 @@ class GameState:
     def register_threats(cls, x, y):
         attack, checking, sight = Find.find_checks(Info.get(x,y))
         b_pinned, w_pinned = Find.find_all_pins()
-        GameState.check = True if checking else False
-        GameState.threats = {'attack':attack,
+        cls.check = True if checking else False
+        cls.threats = {'attack':attack,
                              'checking':checking,
                              'sight':sight,
                              'w_pinned':w_pinned,
@@ -169,14 +176,39 @@ class GameState:
 
     @classmethod
     def register_possible_actions(cls, x, y):
-        GameState.moves = Info.get(x,y).can_move()
-        GameState.captures = Info.get(x,y).can_capture()
+        cls.moves = Info.get(x,y).can_move()
+        cls.captures = Info.get(x,y).can_capture()
         if Info.is_king(x, y):
-            GameState.castle = Find.find_castle((x, y))
-            GameState.moves += GameState.castle
+            cls.castle = Find.find_castle((x, y))
+            cls.moves += cls.castle
         if Info.name(x, y, 'Pawn') and (x,y) in cls.en_passant:
-            GameState.moves.append(cls.en_passant[-1])
+            cls.moves.append(cls.en_passant[-1])
 
+    @classmethod
+    def populate_board(cls):
+        player1 = cls.player
+        player2 = 'Black' if player1 == 'White' else 'White'
+
+        def new_piece(piece_type, color, pos):
+            cls.board[pos[0]][pos[1]] = piece_type(color, pos)
+
+        for y in range(8):
+            new_piece(cls.pieces[0], player2, (1,y))
+            new_piece(cls.pieces[0], player1, (6,y))
+            pass
+
+        piece_type = cls.pieces[1::]
+        for x in (0, 7):
+            color = player2 if x == 0 else player1
+            for y in range(4):
+                offset = 1 if player1 == 'Black' and y == 3 else 0
+                new_piece(piece_type[y], color, (x, 0+y+offset))
+                new_piece(piece_type[y+1 if y == 3 else y], color, (x, 7-y-offset))
+        
+    @classmethod
+    def switch_piece(cls, pos, piece):
+        x, y = pos
+        cls.board[x][y] = cls.pieces[piece]
 
 
 

@@ -15,7 +15,7 @@ class BoardLoader:
         root.canvas.place(anchor='center', relx=0.5, rely=0.5)
         BoardLoader.load_images(root)
         BoardLoader.create_grid(root)
-        BoardLoader.populate_board(root)
+        BoardLoader.populate_board()
         BoardLoader.set_board_color(root)
         root.bind_functions()
         BoardLoader.load_border(root)
@@ -54,25 +54,9 @@ class BoardLoader:
                 root.board_ui[x][y].set_bg(root.darkbg_img)
 
     @staticmethod
-    def populate_board(root):
-        player1 = game.player
-        player2 = 'Black' if player1 == 'White' else 'White'
-
-        def new_piece(piece_type, color, pos):
-            game.board[pos[0]][pos[1]] = piece_type(color, pos)
-
-        for y in range(8):
-            new_piece(Pawn, player2, (1,y))
-            new_piece(Pawn, player1, (6,y))
-            pass
-
-        piece_type = [Rook, Knight, Bishop, Queen, King]
-        for x in (0, 7):
-            color = player2 if x == 0 else player1
-            for y in range(4):
-                offset = 1 if player1 == 'Black' and y == 3 else 0
-                new_piece(piece_type[y], color, (x, 0+y+offset))
-                new_piece(piece_type[y+1 if y == 3 else y], color, (x, 7-y-offset))
+    def populate_board():
+        game.pieces = [Pawn, Rook, Knight, Bishop, Queen, King]
+        game.populate_board()
 
 
 
