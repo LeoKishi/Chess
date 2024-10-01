@@ -21,6 +21,7 @@ class GameState:
     check = False
     check_mate = False
     pieces = None
+    promotion = False
     en_passant = list()
     turn = 'White'
     threats = {'attack':list(),
@@ -43,15 +44,12 @@ class GameState:
         if Info.is_pinned(x, y, old_pos):
             cls.undo_register_move(x,y,old_pos)
             return False
-
-
-        # check pawn promotion
-            # if piece selected: 
-                # register new piece at pos
-            # if exit selected:
-                # undo move
-                # return False
-
+        
+        if Info.can_promote(x, y):
+            cls.promotion = True
+            return True
+        else:
+            cls.promotion = False
 
         cls.register_castle(x,y,old_pos)
         cls.register_en_passant(x, y)
@@ -192,23 +190,22 @@ class GameState:
         def new_piece(piece_type, color, pos):
             cls.board[pos[0]][pos[1]] = piece_type(color, pos)
 
-        for y in range(8):
-            new_piece(cls.pieces[0], player2, (1,y))
-            new_piece(cls.pieces[0], player1, (6,y))
-            pass
-
         piece_type = cls.pieces[1::]
-        for x in (0, 7):
-            color = player2 if x == 0 else player1
-            for y in range(4):
-                offset = 1 if player1 == 'Black' and y == 3 else 0
-                new_piece(piece_type[y], color, (x, 0+y+offset))
-                new_piece(piece_type[y+1 if y == 3 else y], color, (x, 7-y-offset))
+        for x in range(8):
+            new_piece(cls.pieces[0], player2, (1,x))
+            new_piece(cls.pieces[0], player1, (6,x))
+            if x in (0, 7):
+                color = player2 if x == 0 else player1
+                for y in range(4):
+                    offset = 1 if player1 == 'Black' and y == 3 else 0
+                    new_piece(piece_type[y], color, (x, 0+y+offset))
+                    new_piece(piece_type[y+1 if y == 3 else y], color, (x, 7-y-offset))
         
     @classmethod
     def switch_piece(cls, pos, piece):
         x, y = pos
         cls.board[x][y] = cls.pieces[piece]
+        cls.select(x, y)
 
 
 
@@ -338,6 +335,14 @@ class Find:
 
 
 class Info:
+
+    @classmethod
+    def can_promote(cls, x, y) -> bool:
+        piece = GameState.selected
+        if cls.name(*piece.pos, 'Pawn'):
+            if x == (0 if piece.color == 'White' else 7):
+                print('promotion')
+                return True
 
     @staticmethod
     def is_pinned(x, y, old_pos) -> bool:

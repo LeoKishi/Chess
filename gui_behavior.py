@@ -3,6 +3,24 @@ from game_state import Info
 from game_state import Util
 
 
+class Command:
+
+    @staticmethod
+    def try_process(root, x, y) -> bool:
+        if game.process_action(x, y):
+            Draw.draw_last_move(root)
+            Draw.draw_indicator(root)
+            root.board_ui[x][y].raise_piece()
+            if game.check_mate:
+                Draw.draw_elements(root)
+                root.unbind_functions()
+                return True
+        else:
+            Draw.undo_draw_last_move(root)
+
+
+
+
 class Drag:
     hover = None
     is_dragging = False
@@ -48,6 +66,21 @@ class Draw:
     attacks = list()
 
     @staticmethod
+    def draw_selector(root, x, y):
+        Draw.draw_elements(root)
+
+        if Info.color(*game.selected.pos) == 'White':
+            selector = root.w_selector
+            offset = 0
+        else:
+            selector = root.b_selector
+            offset = 3
+
+        selector.place(x-offset, y)
+        selector.set_pos(x, y)
+        root.unbind_functions()
+
+    @staticmethod
     def draw_pieces(root):
         for x, y in Util.range2d():
             piece = Info.get(x,y)
@@ -78,17 +111,6 @@ class Draw:
             for x,y in game.captures:
                 root.board_ui[x][y].set_highlight(root.circle_img)
                 Draw.highlights.append((x,y))
-
-    # DEVTOOL
-    @staticmethod
-    def draw_attacks(root):
-        for x,y in Draw.attacks:
-            root.board_ui[x][y].set_attack('')
-
-        for x,y in Info.get_attacks():
-            root.board_ui[x][y].set_attack(root.attack_img)
-            root.board_ui[x][y].raise_piece()
-            Draw.attacks.append((x,y))
 
     @staticmethod
     def draw_last_move(root):

@@ -18,13 +18,11 @@ class ChessBoard(tk.Tk):
         BoardLoader.create_board(self)
         Draw.draw_pieces(self)
 
-        # DEVTOOL
-        self.attack_indicator = False
-
 
     def bind_functions(self):
         self.canvas.bind('<ButtonPress-1>', lambda event: self.click_handler(event.y, event.x))
         self.canvas.bind('<ButtonRelease-1>', self.click_release)
+
 
     def unbind_functions(self):
         self.canvas.unbind('<ButtonPress-1>')
@@ -48,20 +46,11 @@ class ChessBoard(tk.Tk):
                 Drag.start_drag(self, x, y)
 
         elif (x,y) in Info.possible_moves():
-            if game.process_action(x, y):
-                Draw.draw_last_move(self)
-                Draw.draw_indicator(self)
-                if game.check_mate:
-                    Draw.draw_elements(self)
-                    self.board_ui[x][y].raise_piece()
-                    self.unbind_functions()
-                    return
-            else:
-                Draw.undo_draw_last_move(self)
+            Command.try_process(self, x, y)
+            if game.promotion:
+                Draw.draw_selector(self, x, y)
+                return
             Drag.stop_drag()
-            # DEVTOOL
-            if self.attack_indicator:
-                Draw.draw_attacks(self)
 
         elif game.selected and not Info.is_same_color(x, y):
             if not Drag.stop_drag():
@@ -85,6 +74,7 @@ class ChessBoard(tk.Tk):
         else:
             if Mouse.is_in_bounds(event.y, event.x):
                 self.click_handler(event.y, event.x)
+
 
 
 

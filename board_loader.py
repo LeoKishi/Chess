@@ -3,6 +3,8 @@ from piece_behavior import *
 from game_state import GameState as game
 from game_state import Util
 from dragFrame import DragFrame
+from gui_behavior import Command
+from gui_behavior import Draw
 
 
 class BoardLoader:
@@ -19,6 +21,12 @@ class BoardLoader:
         BoardLoader.set_board_color(root)
         root.bind_functions()
         BoardLoader.load_border(root)
+        BoardLoader.load_selectors(root)
+
+    @staticmethod
+    def load_selectors(root):
+        root.w_selector = Selector(root.canvas, 'White')
+        root.b_selector = Selector(root.canvas, 'Black')
 
     @staticmethod
     def load_border(root):
@@ -73,16 +81,12 @@ class Square:
         self.hover = new_image()
         self.piece = new_image()
         self.indicator = new_image()
-        # DEVTOOL
-        self.attack = new_image()
 
         self.elements = [self.bg,
                          self.highlight,
                          self.indicator,
                          self.hover,
-                         self.piece,
-                         # DEVTOOL
-                         self.attack]
+                         self.piece]
         
 
     def move(self, mouse_x, mouse_y):
@@ -111,6 +115,79 @@ class Square:
     def set_piece(self, img):
         self.canvas.itemconfig(self.piece, image=img)
 
-    # DEVTOOL
-    def set_attack(self, img):
-        self.canvas.itemconfig(self.attack, image=img)
+
+
+
+class Selector:
+    def __init__(self, canvas, color):
+        self.canvas = canvas
+        self.color = color
+        self.pos = None
+        self.load_image(color)
+
+        self.selector = self.new_image(self.selector_img)
+        self.hover = self.new_image(self.hover_img)
+        self.queen = self.new_image(self.w_queen)
+        self.knight = self.new_image(self.w_knight)
+        self.rook = self.new_image(self.w_rook)
+        self.bishop = self.new_image(self.w_bishop)
+
+        self.elements = [self.queen, self.knight, self.rook, self.bishop]
+        
+        if color == 'Black':
+            self.elements = self.elements[::-1]
+        
+        self.bind_events()
+
+    def set_pos(self, x, y):
+        self.pos = (x, y)
+
+    def place(self, x, y):
+        x, y = (x*60)+4, (y*60)+4
+        offset = 0
+        self.canvas.moveto(self.selector, y-6, x-6)
+        for elem in self.elements:
+            self.canvas.moveto(elem, y, x+offset)
+            offset += 60
+        self.show()
+    
+    def load_image(self, color):
+        loader = SpriteSheet(file='assets/ChessPiecesArray.png')
+        row = 1 if color == 'White' else 0
+        self.w_queen = loader.get_sprite((60,60), (row,0))
+        self.w_knight = loader.get_sprite((60,60), (row,3))
+        self.w_rook = loader.get_sprite((60,60), (row,2))
+        self.w_bishop = loader.get_sprite((60,60), (row,4))
+        self.selector_img = tk.PhotoImage(file='assets/selector.png')
+        self.hover_img = tk.PhotoImage(file='assets/selector_hover.png')
+
+    def new_image(self, img):
+        return self.canvas.create_image(0, 0, anchor='nw', image=img, state='hidden')
+
+    def bind_events(self):
+        for i in self.elements:
+            self.canvas.tag_bind(i, '<Enter>', lambda event, i=i: self.show_hover(i))
+            self.canvas.tag_bind(i, '<ButtonPress-1>', lambda event, i=i: self.action(i))
+
+    def show_hover(self, elem):
+        x, y = self.canvas.coords(elem)
+        self.canvas.moveto(self.hover, x, y)
+        self.canvas.itemconfigure(self.hover, state='normal')
+
+    def action(self, option):
+        self.hide()
+        self.canvas.winfo_toplevel().bind_functions()
+        game.selected = [Queen, Knight, Rook, Bishop][option - self.queen](self.color, self.pos)
+        x, y = self.pos
+        game.board[x][y] = None
+        Command.try_process(self.canvas.winfo_toplevel(), x, y)
+        Draw.draw_elements(self.canvas.winfo_toplevel())
+
+    def hide(self):
+        for i in range(7):
+            self.canvas.itemconfigure(self.selector+i, state='hidden')
+
+    def show(self):
+        for i in [self.selector, self.hover] + self.elements:
+            self.canvas.itemconfigure(i, state='normal')
+            self.canvas.tag_raise(i)
