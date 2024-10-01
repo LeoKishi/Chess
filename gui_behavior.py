@@ -69,11 +69,11 @@ class Draw:
     def draw_selector(root, x, y):
         Draw.draw_elements(root)
 
-        if Info.color(*game.selected.pos) == 'White':
-            selector = root.w_selector
+        if Info.color(*game.selected.pos) == game.player:
+            selector = root.w_selector if game.player == 'White' else root.b_selector
             offset = 0
         else:
-            selector = root.b_selector
+            selector = root.b_selector if game.player == 'White' else root.w_selector
             offset = 3
 
         selector.place(x-offset, y)

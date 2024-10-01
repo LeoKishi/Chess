@@ -133,7 +133,7 @@ class Selector:
 
         self.elements = [self.queen, self.knight, self.rook, self.bishop]
         
-        if color == 'Black':
+        if color != game.player:
             self.elements = self.elements[::-1]
         
         self.bind_events()

@@ -339,10 +339,12 @@ class Info:
     @classmethod
     def can_promote(cls, x, y) -> bool:
         piece = GameState.selected
-        if cls.name(*piece.pos, 'Pawn'):
-            if x == (0 if piece.color == 'White' else 7):
-                print('promotion')
-                return True
+        if not cls.name(*piece.pos, 'Pawn'):
+            return
+        
+        if x == (0 if piece.color == GameState.player else 7):
+            print('promotion')
+            return True
 
     @staticmethod
     def is_pinned(x, y, old_pos) -> bool:
