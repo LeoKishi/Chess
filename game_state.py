@@ -32,7 +32,6 @@ class GameState:
     @classmethod
     def process_action(cls, x, y) -> bool:
         old_pos = cls.selected.pos
-        old_last_move = cls.last_move
         cls.register_last_move(cls.selected, (x,y))
         cls.register_move(cls.selected, (x,y))
 
@@ -43,6 +42,9 @@ class GameState:
         if Info.is_pinned(x, y, old_pos):
             cls.undo_register_move(x,y,old_pos)
             return False
+
+        # check pawn promotion
+
 
         cls.register_castle(x,y,old_pos)
         cls.register_en_passant(x, y)
@@ -79,10 +81,6 @@ class GameState:
                 cls.board[x-1][y] = None
             cls.en_passant = list()
             print('en passant')
-
-    @classmethod
-    def undo_register_last_move(cls, old_last_move):
-        cls.last_move = old_last_move
 
     @classmethod
     def register_castle(cls, x, y, old_pos):
