@@ -42,7 +42,6 @@ class BoardLoader:
         root.dot_img = tk.PhotoImage(file='assets/dot.png')
         root.indicator_img = tk.PhotoImage(file='assets/indicator.png')
         root.hover_img = tk.PhotoImage(file='assets/hover.png')
-        root.attack_img = tk.PhotoImage(file='assets/attack.png')
         root.w_border_img = tk.PhotoImage(file='assets/white_border.png')
         root.b_border_img = tk.PhotoImage(file='assets/black_border.png')
 
@@ -127,10 +126,10 @@ class Selector:
 
         self.selector = self.new_image(self.selector_img)
         self.hover = self.new_image(self.hover_img)
-        self.queen = self.new_image(self.w_queen)
-        self.knight = self.new_image(self.w_knight)
-        self.rook = self.new_image(self.w_rook)
-        self.bishop = self.new_image(self.w_bishop)
+        self.queen = self.new_image(self.queen_img)
+        self.knight = self.new_image(self.knight_img)
+        self.rook = self.new_image(self.rook_img)
+        self.bishop = self.new_image(self.bishop_img)
 
         self.elements = [self.queen, self.knight, self.rook, self.bishop]
         
@@ -154,10 +153,10 @@ class Selector:
     def load_image(self, color):
         loader = SpriteSheet(file='assets/ChessPiecesArray.png')
         row = 1 if color == 'White' else 0
-        self.w_queen = loader.get_sprite((60,60), (row,0))
-        self.w_knight = loader.get_sprite((60,60), (row,3))
-        self.w_rook = loader.get_sprite((60,60), (row,2))
-        self.w_bishop = loader.get_sprite((60,60), (row,4))
+        self.queen_img = loader.get_sprite((60,60), (row,0))
+        self.knight_img = loader.get_sprite((60,60), (row,3))
+        self.rook_img = loader.get_sprite((60,60), (row,2))
+        self.bishop_img = loader.get_sprite((60,60), (row,4))
         self.selector_img = tk.PhotoImage(file='assets/selector.png')
         self.hover_img = tk.PhotoImage(file='assets/selector_hover.png')
 
@@ -167,7 +166,7 @@ class Selector:
     def bind_events(self):
         for i in self.elements:
             self.canvas.tag_bind(i, '<Enter>', lambda event, i=i: self.show_hover(i))
-            self.canvas.tag_bind(i, '<ButtonPress-1>', lambda event, i=i: self.action(i))
+            self.canvas.tag_bind(i, '<ButtonPress-1>', lambda event, i=i: self.action(i-self.queen))
 
     def show_hover(self, elem):
         x, y = self.canvas.coords(elem)
@@ -177,7 +176,7 @@ class Selector:
     def action(self, option):
         self.hide()
         self.canvas.winfo_toplevel().bind_functions()
-        game.selected = [Queen, Knight, Rook, Bishop][option - self.queen](self.color, self.pos)
+        game.selected = [Queen, Knight, Rook, Bishop][option](self.color, self.pos)
         x, y = self.pos
         game.board[x][y] = None
         Command.try_process(self.canvas.winfo_toplevel(), x, y)
