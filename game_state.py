@@ -1,3 +1,4 @@
+from engine import Engine
 
 # TODO:
 # start menu
@@ -60,6 +61,7 @@ class GameState:
         cls.first_move_status(x,y)
         cls.new_turn()
         cls.clear_selected()
+        Engine.new_move(Util.coords_to_notation(*cls.last_move))
         return True
 
     @classmethod
@@ -507,8 +509,27 @@ class Util:
     def unique(pos_list) -> list:
         return list(set(pos_list))
 
+    @staticmethod
+    def notation_to_coords(move):
+        pos1, pos2 = move[:2], move[2:]
+        num = {'8':0, '7':1, '6':2, '5':3, '4':4, '3':5, '2':6, '1':7}
+        char = {'a':0, 'b':1, 'c':2, 'd':3, 'e':4, 'f':5, 'g':6, 'h':7}
+        pos1 = (num[pos1[1]], char[pos1[0]])
+        pos2 = (num[pos2[1]], char[pos2[0]])
+        return (pos1, pos2)
+
+    @staticmethod
+    def coords_to_notation(pos1, pos2):
+        char = {7:'1', 6:'2', 5:'3', 4:'4', 3:'5', 2:'6', 1:'7', 0:'8'}
+        num = {0:'a', 1:'b', 2:'c', 3:'d', 4:'e', 5:'f', 6:'g', 7:'h'}
+        notation = num[pos1[1]] + char[pos1[0]] + num[pos2[1]] + char[pos2[0]]
+        return notation
 
 
 
 if __name__ == '__main__':
+    print(Util.notation_to_coords("e7e6"))
+    print(Util.coords_to_notation((2,5),(2,4)))
+
+
     pass

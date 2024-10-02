@@ -1,8 +1,10 @@
 import tkinter as tk
 from game_state import GameState as game
 from game_state import Info
+from game_state import Util
 from board_loader import BoardLoader
 from gui_behavior import *
+from engine import Engine
 
 
 class ChessBoard(tk.Tk):
@@ -29,11 +31,12 @@ class ChessBoard(tk.Tk):
         self.canvas.unbind('<ButtonRelease-1>')
 
 
-    def click_handler(self, raw_x, raw_y):
-        if not Mouse.is_in_bounds(raw_x, raw_y):
+    def click_handler(self, x, y, raw=True):
+        if not Mouse.is_in_bounds(x, y) and raw:
             return
 
-        x, y = (raw_x-4)//60, (raw_y-4)//60
+        if raw:
+            x, y = (x-4)//60, (y-4)//60
 
         if Info.can_select(x, y) and Info.get(x,y).color == game.turn:
             Drag.start_drag(self, x, y)
@@ -46,11 +49,19 @@ class ChessBoard(tk.Tk):
                 Drag.start_drag(self, x, y)
 
         elif (x,y) in Info.possible_moves():
-            Command.try_process(self, x, y)
+            if Command.try_process(self, x, y):
+                return
             if game.promotion:
                 Draw.draw_selector(self, x, y)
                 return
+            
             Drag.stop_drag()
+
+            if game.turn != game.player:
+                self.unbind_functions()
+                Draw.draw_elements(self)
+                self.after(1500, self.bot_move)
+                self.bind_functions()
 
         elif game.selected and not Info.is_same_color(x, y):
             if not Drag.stop_drag():
@@ -75,6 +86,11 @@ class ChessBoard(tk.Tk):
             if Mouse.is_in_bounds(event.y, event.x):
                 self.click_handler(event.y, event.x)
 
+
+    def bot_move(self):
+        move = Util.notation_to_coords(Engine.generate_move())
+        self.click_handler(*move[0], False)
+        self.click_handler(*move[1], False)
 
 
 
